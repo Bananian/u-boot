@@ -11,7 +11,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #include "../board/freescale/common/ics307_clk.h"
@@ -365,7 +364,6 @@
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -381,17 +379,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
-
-/* new uImage format support */
-#define CONFIG_FIT		1
-#define CONFIG_FIT_VERBOSE	1 /* enable fit_format_{error,warning}() */
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -496,7 +483,6 @@
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 #define CONFIG_ATI_RADEON_FB
 #define CONFIG_VIDEO_LOGO
-/*#define CONFIG_CONSOLE_CURSOR*/
 #define CONFIG_SYS_ISA_IO_BASE_ADDRESS VIDEO_IO_OFFSET
 #endif
 
@@ -505,7 +491,6 @@
 #undef CONFIG_EEPRO100
 #undef CONFIG_TULIP
 #undef CONFIG_RTL8139
-#define CONFIG_E1000			/* Define e1000 pci Ethernet card */
 
 #ifndef CONFIG_PCI_PNP
 	#define PCI_ENET0_IOADDR	CONFIG_SYS_PCIE3_IO_BUS
@@ -598,7 +583,6 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_REGINFO
 
 #if defined(CONFIG_PCI)

@@ -21,7 +21,6 @@
 #define CONFIG_SYS_BOARD_NAME	"XPedite5370"
 #define CONFIG_SYS_FORM_3U_VPX	1
 #define CONFIG_BOARD_EARLY_INIT_R	/* Call board_pre_init */
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #ifndef CONFIG_SYS_TEXT_BASE
@@ -131,7 +130,6 @@ extern unsigned long get_board_ddr_clk(unsigned long dummy);
 #define CONFIG_SYS_NAND_BASE_LIST	{CONFIG_SYS_NAND_BASE, \
 					 CONFIG_SYS_NAND_BASE2}
 #define CONFIG_SYS_MAX_NAND_DEVICE	2
-#define CONFIG_SYS_NAND_QUIET_TEST	/* 2nd NAND flash not always populated */
 #define CONFIG_NAND_FSL_ELBC
 
 /*
@@ -215,7 +213,6 @@ extern unsigned long get_board_ddr_clk(unsigned long dummy);
  * Serial Port
  */
 #define CONFIG_CONS_INDEX		1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -231,13 +228,6 @@ extern unsigned long get_board_ddr_clk(unsigned long dummy);
  * Use the HUSH parser
  */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -388,7 +378,6 @@ extern unsigned long get_board_ddr_clk(unsigned long dummy);
 #define CONFIG_CMD_DS4510_INFO
 #define CONFIG_CMD_DTT
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_JFFS2
 #define CONFIG_CMD_MII
@@ -416,8 +405,6 @@ extern unsigned long get_board_ddr_clk(unsigned long dummy);
 #define CONFIG_BOOTDELAY	3		/* -1 disables auto-boot */
 #define CONFIG_PANIC_HANG			/* do not reset board on panic */
 #define CONFIG_PREBOOT				/* enable preboot variable */
-#define CONFIG_FIT		1
-#define CONFIG_FIT_VERBOSE	1
 #define CONFIG_INTEGRITY			/* support booting INTEGRITY OS */
 
 /*

@@ -12,8 +12,8 @@
 #ifndef __HIKEY_H
 #define __HIKEY_H
 
-/* We use generic board for hikey */
-#define CONFIG_SYS_GENERIC_BOARD
+#include <linux/sizes.h>
+
 #define CONFIG_POWER
 #define CONFIG_POWER_HI6553
 
@@ -21,13 +21,12 @@
 
 #define CONFIG_SUPPORT_RAW_INITRD
 
-/* Cache Definitions */
-#define CONFIG_SYS_DCACHE_OFF
+/* MMU Definitions */
+#define CONFIG_SYS_CACHELINE_SIZE	64
 
 #define CONFIG_IDENT_STRING		"hikey"
 
-/* Flat Device Tree Definitions */
-#define CONFIG_OF_LIBFDT
+#define CONFIG_BOARD_EARLY_INIT_F
 
 /* Physical Memory Map */
 
@@ -38,7 +37,8 @@
 #define PHYS_SDRAM_1			0x00000000
 
 /* 1008 MB (the last 16Mb are secured for TrustZone by ATF*/
-#define PHYS_SDRAM_1_SIZE		0x3f000000
+#define PHYS_SDRAM_1_SIZE		0x3EFFFFFF
+
 #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM_1
 
 #define CONFIG_SYS_INIT_RAM_SIZE	0x1000
@@ -55,15 +55,10 @@
 #define GICC_BASE			0xf6802000
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (8 << 20))
+#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + SZ_8M)
 
-/* PL011 Serial Configuration */
-#define CONFIG_PL011_SERIAL
-
-#define CONFIG_PL011_CLOCK		19200000
-#define CONFIG_PL01x_PORTS		{(void *)0xF8015000}
-#define CONFIG_CONS_INDEX		0
-
+/* Serial port PL010/PL011 through the device model */
+#define CONFIG_PL01X_SERIAL
 #define CONFIG_BAUDRATE			115200
 
 #define CONFIG_CMD_USB
@@ -81,9 +76,6 @@
 #endif
 
 #define CONFIG_HIKEY_GPIO
-#define CONFIG_DM_GPIO
-#define CONFIG_CMD_GPIO
-#define CONFIG_DM
 
 /* SD/MMC configuration */
 #define CONFIG_GENERIC_MMC
@@ -126,7 +118,7 @@
 #define CONFIG_EXTRA_ENV_SETTINGS	\
 				"kernel_name=Image\0"	\
 				"kernel_addr_r=0x00080000\0" \
-				"fdt_name=hi6220-hikey.dtb\0" \
+				"fdtfile=hi6220-hikey.dtb\0" \
 				"fdt_addr_r=0x02000000\0" \
 				"fdt_high=0xffffffffffffffff\0" \
 				"initrd_high=0xffffffffffffffff\0" \

@@ -18,7 +18,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 /*
@@ -201,7 +200,6 @@
  * Serial Port
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -216,11 +214,6 @@
 #define CONFIG_AUTO_COMPLETE		/* add autocompletion support */
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -298,7 +291,6 @@
  * TSEC configuration
  */
 #ifdef VME_CADDY2
-#define CONFIG_E1000
 #else
 #define CONFIG_TSEC_ENET		/* TSEC ethernet support */
 #endif
@@ -374,7 +366,6 @@
     #undef CONFIG_CMD_ENV
 #endif
 
-#define CONFIG_CMD_ELF
 /* Pass Ethernet MAC to VxWorks */
 #define CONFIG_SYS_VXWORKS_MAC_PTR	0x000043f0
 

@@ -25,7 +25,6 @@
 #define CONFIG_MACH_TYPE	MACH_TYPE_MCX
 #define CONFIG_BOARD_LATE_INIT
 
-#define CONFIG_SYS_GENERIC_BOARD
 
 #define CONFIG_SYS_CACHELINE_SIZE	64
 
@@ -33,9 +32,6 @@
 
 #include <asm/arch/cpu.h>		/* get chip and board defs */
 #include <asm/arch/omap.h>
-
-#define CONFIG_OF_LIBFDT
-#define CONFIG_FIT
 
 /*
  * Leave it at 0x80008000 to allow booting new u-boot.bin with X-loader
@@ -79,7 +75,6 @@
  */
 #define V_NS16550_CLK			48000000	/* 48MHz (APLL96/2) */
 
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	(-4)
 #define CONFIG_SYS_NS16550_CLK		V_NS16550_CLK
@@ -136,7 +131,6 @@
 #define CONFIG_MTD_PARTITIONS
 #define CONFIG_MTD_DEVICE
 #define CONFIG_CMD_MTDPARTS
-#define CONFIG_CMD_GPIO
 
 #define CONFIG_SYS_NO_FLASH
 #define CONFIG_SYS_I2C

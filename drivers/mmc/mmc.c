@@ -10,10 +10,13 @@
 #include <config.h>
 #include <common.h>
 #include <command.h>
+#include <dm.h>
+#include <dm/device-internal.h>
 #include <errno.h>
 #include <mmc.h>
 #include <part.h>
 #include <malloc.h>
+#include <memalign.h>
 #include <linux/list.h>
 #include <div64.h>
 #include "mmc_private.h"
@@ -179,7 +182,7 @@ struct mmc *find_mmc_device(int dev_num)
 	list_for_each(entry, &mmc_devices) {
 		m = list_entry(entry, struct mmc, link);
 
-		if (m->block_dev.dev == dev_num)
+		if (m->block_dev.devnum == dev_num)
 			return m;
 	}
 
@@ -231,8 +234,11 @@ static int mmc_read_blocks(struct mmc *mmc, void *dst, lbaint_t start,
 	return blkcnt;
 }
 
-static ulong mmc_bread(int dev_num, lbaint_t start, lbaint_t blkcnt, void *dst)
+static ulong mmc_bread(struct blk_desc *block_dev, lbaint_t start,
+		       lbaint_t blkcnt, void *dst)
 {
+	int dev_num = block_dev->devnum;
+	int err;
 	lbaint_t cur, blocks_todo = blkcnt;
 
 	if (blkcnt == 0)
@@ -240,6 +246,10 @@ static ulong mmc_bread(int dev_num, lbaint_t start, lbaint_t blkcnt, void *dst)
 
 	struct mmc *mmc = find_mmc_device(dev_num);
 	if (!mmc)
+		return 0;
+
+	err = mmc_select_hwpart(dev_num, block_dev->hwpart);
+	if (err < 0)
 		return 0;
 
 	if ((start + blkcnt) > mmc->block_dev.lba) {
@@ -576,7 +586,7 @@ int mmc_select_hwpart(int dev_num, int hwpart)
 	if (!mmc)
 		return -ENODEV;
 
-	if (mmc->part_num == hwpart)
+	if (mmc->block_dev.hwpart == hwpart)
 		return 0;
 
 	if (mmc->part_config == MMCPART_NOAVAILABLE) {
@@ -587,8 +597,6 @@ int mmc_select_hwpart(int dev_num, int hwpart)
 	ret = mmc_switch_part(dev_num, hwpart);
 	if (ret)
 		return ret;
-
-	mmc->part_num = hwpart;
 
 	return 0;
 }
@@ -610,8 +618,10 @@ int mmc_switch_part(int dev_num, unsigned int part_num)
 	 * Set the capacity if the switch succeeded or was intended
 	 * to return to representing the raw device.
 	 */
-	if ((ret == 0) || ((ret == -ENODEV) && (part_num == 0)))
+	if ((ret == 0) || ((ret == -ENODEV) && (part_num == 0))) {
 		ret = mmc_set_capacity(mmc, part_num);
+		mmc->block_dev.hwpart = part_num;
+	}
 
 	return ret;
 }
@@ -1321,7 +1331,7 @@ static int mmc_startup(struct mmc *mmc)
 		mmc->wr_rel_set = ext_csd[EXT_CSD_WR_REL_SET];
 	}
 
-	err = mmc_set_capacity(mmc, mmc->part_num);
+	err = mmc_set_capacity(mmc, mmc->block_dev.hwpart);
 	if (err)
 		return err;
 
@@ -1462,11 +1472,14 @@ static int mmc_startup(struct mmc *mmc)
 
 	/* fill in device description */
 	mmc->block_dev.lun = 0;
+	mmc->block_dev.hwpart = 0;
 	mmc->block_dev.type = 0;
 	mmc->block_dev.blksz = mmc->read_bl_len;
 	mmc->block_dev.log2blksz = LOG2(mmc->block_dev.blksz);
 	mmc->block_dev.lba = lldiv(mmc->capacity, mmc->read_bl_len);
-#if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_LIBCOMMON_SUPPORT)
+#if !defined(CONFIG_SPL_BUILD) || \
+		(defined(CONFIG_SPL_LIBCOMMON_SUPPORT) && \
+		!defined(CONFIG_USE_TINY_PRINTF))
 	sprintf(mmc->block_dev.vendor, "Man %06x Snr %04x%04x",
 		mmc->cid[0] >> 24, (mmc->cid[2] & 0xffff),
 		(mmc->cid[3] >> 16) & 0xffff);
@@ -1482,7 +1495,7 @@ static int mmc_startup(struct mmc *mmc)
 	mmc->block_dev.revision[0] = 0;
 #endif
 #if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_LIBDISK_SUPPORT)
-	init_part(&mmc->block_dev);
+	part_init(&mmc->block_dev);
 #endif
 
 	return 0;
@@ -1543,7 +1556,7 @@ struct mmc *mmc_create(const struct mmc_config *cfg, void *priv)
 	mmc->dsr = 0xffffffff;
 	/* Setup the universal parts of the block interface just once */
 	mmc->block_dev.if_type = IF_TYPE_MMC;
-	mmc->block_dev.dev = cur_dev_num++;
+	mmc->block_dev.devnum = cur_dev_num++;
 	mmc->block_dev.removable = 1;
 	mmc->block_dev.block_read = mmc_bread;
 	mmc->block_dev.block_write = mmc_bwrite;
@@ -1566,7 +1579,7 @@ void mmc_destroy(struct mmc *mmc)
 }
 
 #ifdef CONFIG_PARTITIONS
-block_dev_desc_t *mmc_get_dev(int dev)
+struct blk_desc *mmc_get_dev(int dev)
 {
 	struct mmc *mmc = find_mmc_device(dev);
 	if (!mmc || mmc_init(mmc))
@@ -1619,7 +1632,7 @@ int mmc_start_init(struct mmc *mmc)
 		return err;
 
 	/* The internal partition reset to user partition(0) at every CMD0*/
-	mmc->part_num = 0;
+	mmc->block_dev.hwpart = 0;
 
 	/* Test for SD version 2 */
 	err = mmc_send_if_cond(mmc);
@@ -1715,7 +1728,7 @@ void print_mmc_devices(char separator)
 		else
 			mmc_type = NULL;
 
-		printf("%s: %d", m->cfg->name, m->block_dev.dev);
+		printf("%s: %d", m->cfg->name, m->block_dev.devnum);
 		if (mmc_type)
 			printf(" (%s)", mmc_type);
 
@@ -1759,10 +1772,54 @@ static void do_preinit(void)
 	}
 }
 
+#if defined(CONFIG_DM_MMC) && defined(CONFIG_SPL_BUILD)
+static int mmc_probe(bd_t *bis)
+{
+	return 0;
+}
+#elif defined(CONFIG_DM_MMC)
+static int mmc_probe(bd_t *bis)
+{
+	int ret, i;
+	struct uclass *uc;
+	struct udevice *dev;
+
+	ret = uclass_get(UCLASS_MMC, &uc);
+	if (ret)
+		return ret;
+
+	/*
+	 * Try to add them in sequence order. Really with driver model we
+	 * should allow holes, but the current MMC list does not allow that.
+	 * So if we request 0, 1, 3 we will get 0, 1, 2.
+	 */
+	for (i = 0; ; i++) {
+		ret = uclass_get_device_by_seq(UCLASS_MMC, i, &dev);
+		if (ret == -ENODEV)
+			break;
+	}
+	uclass_foreach_dev(dev, uc) {
+		ret = device_probe(dev);
+		if (ret)
+			printf("%s - probe failed: %d\n", dev->name, ret);
+	}
+
+	return 0;
+}
+#else
+static int mmc_probe(bd_t *bis)
+{
+	if (board_mmc_init(bis) < 0)
+		cpu_mmc_init(bis);
+
+	return 0;
+}
+#endif
 
 int mmc_initialize(bd_t *bis)
 {
 	static int initialized = 0;
+	int ret;
 	if (initialized)	/* Avoid initializing mmc multiple times */
 		return 0;
 	initialized = 1;
@@ -1770,10 +1827,9 @@ int mmc_initialize(bd_t *bis)
 	INIT_LIST_HEAD (&mmc_devices);
 	cur_dev_num = 0;
 
-#ifndef CONFIG_DM_MMC
-	if (board_mmc_init(bis) < 0)
-		cpu_mmc_init(bis);
-#endif
+	ret = mmc_probe(bis);
+	if (ret)
+		return ret;
 
 #ifndef CONFIG_SPL_BUILD
 	print_mmc_devices(',');

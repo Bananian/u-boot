@@ -339,7 +339,8 @@ void configure_mpu_dpll(void)
 	debug("MPU DPLL locked\n");
 }
 
-#if defined(CONFIG_USB_EHCI_OMAP) || defined(CONFIG_USB_XHCI_OMAP)
+#if defined(CONFIG_USB_EHCI_OMAP) || defined(CONFIG_USB_XHCI_OMAP) || \
+	defined(CONFIG_USB_MUSB_OMAP2PLUS)
 static void setup_usb_dpll(void)
 {
 	const struct dpll_params *params;
@@ -406,7 +407,8 @@ static void setup_dplls(void)
 	/* MPU dpll */
 	configure_mpu_dpll();
 
-#if defined(CONFIG_USB_EHCI_OMAP) || defined(CONFIG_USB_XHCI_OMAP)
+#if defined(CONFIG_USB_EHCI_OMAP) || defined(CONFIG_USB_XHCI_OMAP) || \
+	defined(CONFIG_USB_MUSB_OMAP2PLUS)
 	setup_usb_dpll();
 #endif
 	params = get_ddr_dpll_params(*dplls_data);
@@ -648,6 +650,14 @@ static inline void enable_clock_domain(u32 const clkctrl_reg, u32 enable_mode)
 	debug("Enable clock domain - %x\n", clkctrl_reg);
 }
 
+static inline void disable_clock_domain(u32 const clkctrl_reg)
+{
+	clrsetbits_le32(clkctrl_reg, CD_CLKCTRL_CLKTRCTRL_MASK,
+			CD_CLKCTRL_CLKTRCTRL_SW_SLEEP <<
+			CD_CLKCTRL_CLKTRCTRL_SHIFT);
+	debug("Disable clock domain - %x\n", clkctrl_reg);
+}
+
 static inline void wait_for_clk_enable(u32 clkctrl_addr)
 {
 	u32 clkctrl, idlest = MODULE_CLKCTRL_IDLEST_DISABLED;
@@ -675,6 +685,34 @@ static inline void enable_clock_module(u32 const clkctrl_addr, u32 enable_mode,
 	debug("Enable clock module - %x\n", clkctrl_addr);
 	if (wait_for_enable)
 		wait_for_clk_enable(clkctrl_addr);
+}
+
+static inline void wait_for_clk_disable(u32 clkctrl_addr)
+{
+	u32 clkctrl, idlest = MODULE_CLKCTRL_IDLEST_FULLY_FUNCTIONAL;
+	u32 bound = LDELAY;
+
+	while ((idlest != MODULE_CLKCTRL_IDLEST_DISABLED)) {
+		clkctrl = readl(clkctrl_addr);
+		idlest = (clkctrl & MODULE_CLKCTRL_IDLEST_MASK) >>
+			 MODULE_CLKCTRL_IDLEST_SHIFT;
+		if (--bound == 0) {
+			printf("Clock disable failed for 0x%x idlest 0x%x\n",
+			       clkctrl_addr, clkctrl);
+			return;
+		}
+	}
+}
+
+static inline void disable_clock_module(u32 const clkctrl_addr,
+					u32 wait_for_disable)
+{
+	clrsetbits_le32(clkctrl_addr, MODULE_CLKCTRL_MODULEMODE_MASK,
+			MODULE_CLKCTRL_MODULEMODE_SW_DISABLE <<
+			MODULE_CLKCTRL_MODULEMODE_SHIFT);
+	debug("Disable clock module - %x\n", clkctrl_addr);
+	if (wait_for_disable)
+		wait_for_clk_disable(clkctrl_addr);
 }
 
 void freq_update_core(void)
@@ -733,7 +771,7 @@ void lock_dpll(u32 const base)
 	wait_for_lock(base);
 }
 
-void setup_clocks_for_console(void)
+static void setup_clocks_for_console(void)
 {
 	/* Do not add any spl_debug prints in this function */
 	clrsetbits_le32((*prcm)->cm_l4per_clkstctrl, CD_CLKCTRL_CLKTRCTRL_MASK,
@@ -800,14 +838,48 @@ void do_enable_clocks(u32 const *clk_domains,
 	}
 }
 
+void do_disable_clocks(u32 const *clk_domains,
+			    u32 const *clk_modules_disable,
+			    u8 wait_for_disable)
+{
+	u32 i, max = 100;
+
+
+	/* Clock modules that need to be put in SW_DISABLE */
+	for (i = 0; (i < max) && clk_modules_disable[i]; i++)
+		disable_clock_module(clk_modules_disable[i],
+				     wait_for_disable);
+
+	/* Put the clock domains in SW_SLEEP mode */
+	for (i = 0; (i < max) && clk_domains[i]; i++)
+		disable_clock_domain(clk_domains[i]);
+}
+
+/**
+ * setup_early_clocks() - Setup early clocks needed for SoC
+ *
+ * Setup clocks for console, SPL basic initialization clocks and initialize
+ * the timer. This is invoked prior prcm_init.
+ */
+void setup_early_clocks(void)
+{
+	switch (omap_hw_init_context()) {
+	case OMAP_INIT_CONTEXT_SPL:
+	case OMAP_INIT_CONTEXT_UBOOT_FROM_NOR:
+	case OMAP_INIT_CONTEXT_UBOOT_AFTER_CH:
+		setup_clocks_for_console();
+		enable_basic_clocks();
+		timer_init();
+		/* Fall through */
+	}
+}
+
 void prcm_init(void)
 {
 	switch (omap_hw_init_context()) {
 	case OMAP_INIT_CONTEXT_SPL:
 	case OMAP_INIT_CONTEXT_UBOOT_FROM_NOR:
 	case OMAP_INIT_CONTEXT_UBOOT_AFTER_CH:
-		enable_basic_clocks();
-		timer_init();
 		scale_vcores(*omap_vcores);
 		setup_dplls();
 		setup_warmreset_time();

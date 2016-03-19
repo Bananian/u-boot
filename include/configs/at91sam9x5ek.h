@@ -27,9 +27,6 @@
 #define CONFIG_DISPLAY_CPUINFO
 
 #define CONFIG_CMD_BOOTZ
-#define CONFIG_OF_LIBFDT
-
-#define CONFIG_SYS_GENERIC_BOARD
 
 /* general purpose I/O */
 #define CONFIG_ATMEL_LEGACY		/* required until (g)pio is fixed */
@@ -93,7 +90,6 @@
 /* DataFlash */
 #ifdef CONFIG_CMD_SF
 #define CONFIG_ATMEL_SPI
-#define CONFIG_SPI_FLASH_ATMEL
 #define CONFIG_SF_DEFAULT_SPEED		30000000
 #endif
 
@@ -225,8 +221,6 @@
 
 #define CONFIG_SYS_CBSIZE	256
 #define CONFIG_SYS_MAXARGS	16
-#define CONFIG_SYS_PBSIZE	(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) \
-					+ 16)
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_AUTO_COMPLETE
@@ -260,8 +254,6 @@
 #define CONFIG_SYS_AT91_PLLA		0x20c73f03
 #define CONFIG_SYS_MCKR			0x1301
 #define CONFIG_SYS_MCKR_CSS		0x1302
-
-#define ATMEL_BASE_MPDDRC		ATMEL_BASE_DDRSDRC
 
 #ifdef CONFIG_SYS_USE_MMC
 #define CONFIG_SPL_LDSCRIPT		arch/arm/mach-at91/arm926ejs/u-boot-spl.lds

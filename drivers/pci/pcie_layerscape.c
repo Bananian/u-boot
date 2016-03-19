@@ -11,7 +11,10 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <malloc.h>
-#include <asm/arch-fsl-lsch3/fdt.h>
+#ifndef CONFIG_LS102XA
+#include <asm/arch/fdt.h>
+#include <asm/arch/soc.h>
+#endif
 
 #ifndef CONFIG_SYS_PCI_MEMORY_BUS
 #define CONFIG_SYS_PCI_MEMORY_BUS CONFIG_SYS_SDRAM_BASE
@@ -54,11 +57,6 @@
 #define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
 #define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
 #define PCIE_ATU_UPPER_TARGET		0x91C
-
-/* LUT registers */
-#define PCIE_LUT_BASE		0x80000
-#define PCIE_LUT_LCTRL0		0x7F8
-#define PCIE_LUT_DBG		0x7FC
 
 #define PCIE_DBI_RO_WR_EN	0x8bc
 
@@ -160,7 +158,7 @@ static int ls_pcie_link_state(struct ls_pcie *pcie)
 {
 	u32 state;
 
-	state = readl(pcie->dbi + PCIE_LUT_BASE + PCIE_LUT_DBG) &
+	state = pex_lut_in32(pcie->dbi + PCIE_LUT_BASE + PCIE_LUT_DBG) &
 		LTSSM_STATE_MASK;
 	if (state < LTSSM_PCIE_L0) {
 		debug("....PCIe link error. LTSSM=0x%02x.\n", state);
@@ -316,7 +314,7 @@ static int ls_pcie_read_config(struct pci_controller *hose, pci_dev_t d,
 
 	if (ls_pcie_addr_valid(hose, d)) {
 		*val = 0xffffffff;
-		return -EINVAL;
+		return 0;
 	}
 
 	if (PCI_BUS(d) == hose->first_busno) {
@@ -464,16 +462,20 @@ static void ls_pcie_setup_ep(struct ls_pcie *pcie, struct ls_pcie_info *info)
 
 		for (pf = 0; pf < PCIE_PF_NUM; pf++) {
 			for (vf = 0; vf <= PCIE_VF_NUM; vf++) {
+#ifndef CONFIG_LS102XA
 				writel(PCIE_LCTRL0_VAL(pf, vf),
 				       pcie->dbi + PCIE_LUT_BASE +
 				       PCIE_LUT_LCTRL0);
+#endif
 				ls_pcie_ep_setup_bars(pcie->dbi);
 				ls_pcie_ep_setup_atu(pcie, info);
 			}
 		}
 
 		/* Disable CFG2 */
+#ifndef CONFIG_LS102XA
 		writel(0, pcie->dbi + PCIE_LUT_BASE + PCIE_LUT_LCTRL0);
+#endif
 	} else {
 		ls_pcie_ep_setup_bars(pcie->dbi + PCIE_NO_SRIOV_BAR_BASE);
 		ls_pcie_ep_setup_atu(pcie, info);
@@ -663,7 +665,7 @@ void ft_pci_setup(void *blob, bd_t *bd)
 }
 #endif
 
-#ifdef CONFIG_LS2085A
+#if defined(CONFIG_LS2080A) || defined(CONFIG_LS2085A)
 
 void pcie_set_available_streamids(void *blob, const char *pcie_path,
 				  u32 *stream_ids, int count)
@@ -689,6 +691,7 @@ void fdt_fixup_smmu_pcie(void *blob)
 {
 	int count;
 	u32 stream_ids[MAX_STREAM_IDS];
+	u32 ctlr_streamid = 0x300;
 
 	#ifdef CONFIG_PCIE1
 	/* PEX1 stream ID fixup */
@@ -696,6 +699,8 @@ void fdt_fixup_smmu_pcie(void *blob)
 	alloc_stream_ids(FSL_PEX1_STREAM_ID_START, count, stream_ids,
 			 MAX_STREAM_IDS);
 	pcie_set_available_streamids(blob, "/pcie@3400000", stream_ids, count);
+	append_mmu_masters(blob, "/iommu@5000000", "/pcie@3400000",
+			   &ctlr_streamid, 1);
 	#endif
 
 	#ifdef CONFIG_PCIE2
@@ -704,6 +709,8 @@ void fdt_fixup_smmu_pcie(void *blob)
 	alloc_stream_ids(FSL_PEX2_STREAM_ID_START, count, stream_ids,
 			 MAX_STREAM_IDS);
 	pcie_set_available_streamids(blob, "/pcie@3500000", stream_ids, count);
+	append_mmu_masters(blob, "/iommu@5000000", "/pcie@3500000",
+			   &ctlr_streamid, 1);
 	#endif
 
 	#ifdef CONFIG_PCIE3
@@ -712,6 +719,8 @@ void fdt_fixup_smmu_pcie(void *blob)
 	alloc_stream_ids(FSL_PEX3_STREAM_ID_START, count, stream_ids,
 			 MAX_STREAM_IDS);
 	pcie_set_available_streamids(blob, "/pcie@3600000", stream_ids, count);
+	append_mmu_masters(blob, "/iommu@5000000", "/pcie@3600000",
+			   &ctlr_streamid, 1);
 	#endif
 
 	#ifdef CONFIG_PCIE4
@@ -720,6 +729,8 @@ void fdt_fixup_smmu_pcie(void *blob)
 	alloc_stream_ids(FSL_PEX4_STREAM_ID_START, count, stream_ids,
 			 MAX_STREAM_IDS);
 	pcie_set_available_streamids(blob, "/pcie@3700000", stream_ids, count);
+	append_mmu_masters(blob, "/iommu@5000000", "/pcie@3700000",
+			   &ctlr_streamid, 1);
 	#endif
 }
 #endif

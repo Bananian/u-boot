@@ -10,6 +10,7 @@
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>
+#include <memalign.h>
 #include <mmc.h>
 #include <dwmmc.h>
 #include <asm-generic/errno.h>
@@ -39,7 +40,7 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->flags = desc0;
 	desc->cnt = desc1;
 	desc->addr = desc2;
-	desc->next_addr = (unsigned int)desc + sizeof(struct dwmci_idmac);
+	desc->next_addr = (ulong)desc + sizeof(struct dwmci_idmac);
 }
 
 static void dwmci_prepare_data(struct dwmci_host *host,
@@ -57,7 +58,7 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
 	data_start = (ulong)cur_idmac;
-	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
+	dwmci_writel(host, DWMCI_DBADDR, (ulong)cur_idmac);
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH ;
@@ -69,7 +70,7 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				    (u32)bounce_buffer + (i * PAGE_SIZE));
+				    (ulong)bounce_buffer + (i * PAGE_SIZE));
 
 		if (blk_cnt <= 8)
 			break;
@@ -93,6 +94,81 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	dwmci_writel(host, DWMCI_BYTCNT, data->blocksize * data->blocks);
 }
 
+static int dwmci_data_transfer(struct dwmci_host *host, struct mmc_data *data)
+{
+	int ret = 0;
+	u32 timeout = 240000;
+	u32 mask, size, i, len = 0;
+	u32 *buf = NULL;
+	ulong start = get_timer(0);
+	u32 fifo_depth = (((host->fifoth_val & RX_WMARK_MASK) >>
+			    RX_WMARK_SHIFT) + 1) * 2;
+
+	size = data->blocksize * data->blocks / 4;
+	if (data->flags == MMC_DATA_READ)
+		buf = (unsigned int *)data->dest;
+	else
+		buf = (unsigned int *)data->src;
+
+	for (;;) {
+		mask = dwmci_readl(host, DWMCI_RINTSTS);
+		/* Error during data transfer. */
+		if (mask & (DWMCI_DATA_ERR | DWMCI_DATA_TOUT)) {
+			debug("%s: DATA ERROR!\n", __func__);
+			ret = -EINVAL;
+			break;
+		}
+
+		if (host->fifo_mode && size) {
+			if (data->flags == MMC_DATA_READ) {
+				if ((dwmci_readl(host, DWMCI_RINTSTS) &&
+				     DWMCI_INTMSK_RXDR)) {
+					len = dwmci_readl(host, DWMCI_STATUS);
+					len = (len >> DWMCI_FIFO_SHIFT) &
+						    DWMCI_FIFO_MASK;
+					for (i = 0; i < len; i++)
+						*buf++ =
+						dwmci_readl(host, DWMCI_DATA);
+					dwmci_writel(host, DWMCI_RINTSTS,
+						     DWMCI_INTMSK_RXDR);
+				}
+			} else {
+				if ((dwmci_readl(host, DWMCI_RINTSTS) &&
+				     DWMCI_INTMSK_TXDR)) {
+					len = dwmci_readl(host, DWMCI_STATUS);
+					len = fifo_depth - ((len >>
+						   DWMCI_FIFO_SHIFT) &
+						   DWMCI_FIFO_MASK);
+					for (i = 0; i < len; i++)
+						dwmci_writel(host, DWMCI_DATA,
+							     *buf++);
+					dwmci_writel(host, DWMCI_RINTSTS,
+						     DWMCI_INTMSK_TXDR);
+				}
+			}
+			size = size > len ? (size - len) : 0;
+		}
+
+		/* Data arrived correctly. */
+		if (mask & DWMCI_INTMSK_DTO) {
+			ret = 0;
+			break;
+		}
+
+		/* Check for timeout. */
+		if (get_timer(start) > timeout) {
+			debug("%s: Timeout waiting for data!\n",
+			      __func__);
+			ret = TIMEOUT;
+			break;
+		}
+	}
+
+	dwmci_writel(host, DWMCI_RINTSTS, mask);
+
+	return ret;
+}
+
 static int dwmci_set_transfer_mode(struct dwmci_host *host,
 		struct mmc_data *data)
 {
@@ -113,7 +189,7 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 				 data ? DIV_ROUND_UP(data->blocks, 8) : 0);
 	int ret = 0, flags = 0, i;
 	unsigned int timeout = 100000;
-	u32 retry = 10000;
+	u32 retry = 100000;
 	u32 mask, ctrl;
 	ulong start = get_timer(0);
 	struct bounce_buffer bbstate;
@@ -128,17 +204,24 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
 	if (data) {
-		if (data->flags == MMC_DATA_READ) {
-			bounce_buffer_start(&bbstate, (void*)data->dest,
-					    data->blocksize *
-					    data->blocks, GEN_BB_WRITE);
+		if (host->fifo_mode) {
+			dwmci_writel(host, DWMCI_BLKSIZ, data->blocksize);
+			dwmci_writel(host, DWMCI_BYTCNT,
+				     data->blocksize * data->blocks);
+			dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 		} else {
-			bounce_buffer_start(&bbstate, (void*)data->src,
-					    data->blocksize *
-					    data->blocks, GEN_BB_READ);
+			if (data->flags == MMC_DATA_READ) {
+				bounce_buffer_start(&bbstate, (void*)data->dest,
+						data->blocksize *
+						data->blocks, GEN_BB_WRITE);
+			} else {
+				bounce_buffer_start(&bbstate, (void*)data->src,
+						data->blocksize *
+						data->blocks, GEN_BB_READ);
+			}
+			dwmci_prepare_data(host, data, cur_idmac,
+					   bbstate.bounce_buffer);
 		}
-		dwmci_prepare_data(host, data, cur_idmac,
-				   bbstate.bounce_buffer);
 	}
 
 	dwmci_writel(host, DWMCI_CMDARG, cmd->cmdarg);
@@ -212,39 +295,15 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	}
 
 	if (data) {
-		start = get_timer(0);
-		timeout = 1000;
-		for (;;) {
-			mask = dwmci_readl(host, DWMCI_RINTSTS);
-			/* Error during data transfer. */
-			if (mask & (DWMCI_DATA_ERR | DWMCI_DATA_TOUT)) {
-				debug("%s: DATA ERROR!\n", __func__);
-				ret = -EINVAL;
-				break;
-			}
+		ret = dwmci_data_transfer(host, data);
 
-			/* Data arrived correctly. */
-			if (mask & DWMCI_INTMSK_DTO) {
-				ret = 0;
-				break;
-			}
-
-			/* Check for timeout. */
-			if (get_timer(start) > timeout) {
-				debug("%s: Timeout waiting for data!\n",
-				       __func__);
-				ret = TIMEOUT;
-				break;
-			}
+		/* only dma mode need it */
+		if (!host->fifo_mode) {
+			ctrl = dwmci_readl(host, DWMCI_CTRL);
+			ctrl &= ~(DWMCI_DMA_EN);
+			dwmci_writel(host, DWMCI_CTRL, ctrl);
+			bounce_buffer_stop(&bbstate);
 		}
-
-		dwmci_writel(host, DWMCI_RINTSTS, mask);
-
-		ctrl = dwmci_readl(host, DWMCI_CTRL);
-		ctrl &= ~(DWMCI_DMA_EN);
-		dwmci_writel(host, DWMCI_CTRL, ctrl);
-
-		bounce_buffer_stop(&bbstate);
 	}
 
 	udelay(100);
@@ -266,7 +325,7 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 	 * host->bus_hz should be set by user.
 	 */
 	if (host->get_mmc_clk)
-		sclk = host->get_mmc_clk(host);
+		sclk = host->get_mmc_clk(host, freq);
 	else if (host->bus_hz)
 		sclk = host->bus_hz;
 	else {

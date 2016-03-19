@@ -6,6 +6,7 @@
  */
 #include <common.h>
 #include <dm.h>
+#include <dm/platform_data/serial_pl01x.h>
 #include <errno.h>
 #include <malloc.h>
 #include <netdev.h>
@@ -18,6 +19,7 @@
 #include <asm/arch/periph.h>
 #include <asm/arch/pinmux.h>
 #include <asm/arch/hi6220.h>
+#include <asm/armv8/mmu.h>
 
 /*TODO drop this table in favour of device tree */
 static const struct hikey_gpio_platdata hi6220_gpio[] = {
@@ -68,6 +70,68 @@ U_BOOT_DEVICES(hi6220_gpios) = {
 };
 
 DECLARE_GLOBAL_DATA_PTR;
+
+static const struct pl01x_serial_platdata serial_platdata = {
+#if CONFIG_CONS_INDEX == 1
+	.base = HI6220_UART0_BASE,
+#elif CONFIG_CONS_INDEX == 4
+	.base = HI6220_UART3_BASE,
+#else
+#error "Unsuported console index value."
+#endif
+	.type = TYPE_PL011,
+	.clock = 19200000
+};
+
+U_BOOT_DEVICE(hikey_seriala) = {
+	.name = "serial_pl01x",
+	.platdata = &serial_platdata,
+};
+
+static struct mm_region hikey_mem_map[] = {
+	{
+		.base = 0x0UL,
+		.size = 0x80000000UL,
+		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+			 PTE_BLOCK_INNER_SHARE
+	}, {
+		.base = 0x80000000UL,
+		.size = 0x80000000UL,
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE |
+			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+	}, {
+		/* List terminator */
+		0,
+	}
+};
+
+struct mm_region *mem_map = hikey_mem_map;
+
+#ifdef CONFIG_BOARD_EARLY_INIT_F
+int board_uart_init(void)
+{
+	switch (CONFIG_CONS_INDEX) {
+	case 1:
+		hi6220_pinmux_config(PERIPH_ID_UART0);
+		break;
+	case 4:
+		hi6220_pinmux_config(PERIPH_ID_UART3);
+		break;
+	default:
+		debug("%s: Unsupported UART selected\n", __func__);
+		return -1;
+	}
+
+	return 0;
+}
+
+int board_early_init_f(void)
+{
+	board_uart_init();
+	return 0;
+}
+#endif
 
 struct peri_sc_periph_regs *peri_sc =
 	(struct peri_sc_periph_regs *)HI6220_PERI_BASE;
@@ -269,8 +333,6 @@ int misc_init_r(void)
 
 int board_init(void)
 {
-	gd->flags = 0;
-
 	return 0;
 }
 

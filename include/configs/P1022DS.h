@@ -11,7 +11,6 @@
 
 #include "../board/freescale/common/ics307_clk.h"
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #ifdef CONFIG_36BIT
@@ -394,7 +393,6 @@
  * Serial Port
  */
 #define CONFIG_CONS_INDEX		1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -445,17 +443,6 @@
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 #endif
 
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE
-
 /* I2C */
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_FSL
@@ -479,10 +466,8 @@
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_SPI_FLASH_SPANSION
 
 #define CONFIG_HARD_SPI
-#define CONFIG_FSL_ESPI
 
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED		10000000
@@ -554,7 +539,6 @@
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
-#define CONFIG_E1000			/* Define e1000 pci Ethernet card */
 #endif
 
 /* SATA */
@@ -679,7 +663,6 @@
 /*
  * Command line configuration.
  */
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_ERRATA
 #define CONFIG_CMD_IRQ
 #define CONFIG_CMD_I2C

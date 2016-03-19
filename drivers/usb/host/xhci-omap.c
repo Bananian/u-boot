@@ -27,7 +27,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static struct omap_xhci omap;
 
-inline int __board_usb_init(int index, enum usb_init_type init)
+__weak int __board_usb_init(int index, enum usb_init_type init)
 {
 	return 0;
 }
@@ -96,4 +96,5 @@ void xhci_hcd_stop(int index)
 	struct omap_xhci *ctx = &omap;
 
 	omap_xhci_core_exit(ctx);
+	board_usb_cleanup(index, USB_INIT_HOST);
 }

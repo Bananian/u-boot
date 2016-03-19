@@ -23,7 +23,6 @@
 #define CONFIG_BAT_RW		1	/* Use common BAT rw code */
 #define CONFIG_HIGH_BATS	1	/* High BATs supported and enabled */
 #define CONFIG_ALTIVEC		1
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define	CONFIG_SYS_TEXT_BASE	0xfff00000
@@ -138,7 +137,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_NAND_ACTL_CLE 	(1 << 15)	/* C_LA15 */
 #define CONFIG_SYS_NAND_ACTL_NCE	0		/* NCE not controlled by ADDR */
 #define CONFIG_SYS_NAND_ACTL_DELAY	25
-#define CONFIG_SYS_NAND_QUIET_TEST
 #define CONFIG_JFFS2_NAND
 
 /*
@@ -216,7 +214,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
  * Serial Port
  */
 #define CONFIG_CONS_INDEX		1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -232,13 +229,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
  * Use the HUSH parser
  */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -533,7 +523,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_CMD_DS4510_INFO
 #define CONFIG_CMD_DTT
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_IRQ
 #define CONFIG_CMD_JFFS2
@@ -561,8 +550,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_BOOTDELAY	3		/* -1 disables auto-boot */
 #define CONFIG_PANIC_HANG			/* do not reset board on panic */
 #define CONFIG_PREBOOT				/* enable preboot variable */
-#define CONFIG_FIT		1
-#define CONFIG_FIT_VERBOSE	1
 #define CONFIG_INTEGRITY			/* support booting INTEGRITY OS */
 
 /*

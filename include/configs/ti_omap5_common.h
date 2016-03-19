@@ -19,7 +19,6 @@
 
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
-#define CONFIG_ARCH_CPU_INIT
 
 /* Common ARM Erratas */
 #define CONFIG_ARM_ERRATA_798870
@@ -50,10 +49,11 @@
 /*
  * Hardware drivers
  */
-#define CONFIG_SYS_NS16550
+#define CONFIG_SYS_NS16550_CLK		48000000
+#if defined(CONFIG_SPL_BUILD) || !defined(CONFIG_DM_SERIAL)
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	(-4)
-#define CONFIG_SYS_NS16550_CLK		48000000
+#endif
 
 /*
  * Environment setup
@@ -70,6 +70,7 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	DEFAULT_LINUX_BOOT_ENV \
+	DEFAULT_MMC_TI_ARGS \
 	"console=" CONSOLEDEV ",115200n8\0" \
 	"fdtfile=undefined\0" \
 	"bootpart=0:2\0" \
@@ -80,37 +81,17 @@
 	"partitions=" PARTS_DEFAULT "\0" \
 	"optargs=\0" \
 	"dofastboot=0\0" \
-	"mmcdev=0\0" \
-	"mmcroot=/dev/mmcblk0p2 rw\0" \
-	"mmcrootfstype=ext4 rootwait\0" \
-	"mmcargs=setenv bootargs console=${console} " \
-		"${optargs} " \
-		"vram=${vram} " \
-		"root=${mmcroot} " \
-		"rootfstype=${mmcrootfstype}\0" \
 	"loadbootscript=fatload mmc ${mmcdev} ${loadaddr} boot.scr\0" \
 	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
 		"source ${loadaddr}\0" \
-	"bootenv=uEnv.txt\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
-	"importbootenv=echo Importing environment from mmc${mmcdev} ...; " \
-		"env import -t ${loadaddr} ${filesize}\0" \
 	"loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
 	"mmcboot=mmc dev ${mmcdev}; " \
 		"if mmc rescan; then " \
 			"echo SD/MMC found on device ${mmcdev};" \
-			"if run loadbootenv; then " \
-				"echo Loaded environment from ${bootenv};" \
-				"run importbootenv;" \
-			"fi;" \
-			"if test -n $uenvcmd; then " \
-				"echo Running uenvcmd ...;" \
-				"run uenvcmd;" \
-			"fi;" \
 			"if run loadimage; then " \
 				"run loadfdt; " \
 				"echo Booting from mmc${mmcdev} ...; " \
-				"run mmcargs; " \
+				"run args_mmc; " \
 				"bootz ${loadaddr} - ${fdtaddr}; " \
 			"fi;" \
 		"fi;\0" \
@@ -122,6 +103,8 @@
 		"if test $board_name = dra72x; then " \
 			"setenv fdtfile dra72-evm.dtb; fi;" \
 		"if test $board_name = beagle_x15; then " \
+			"setenv fdtfile am57xx-beagle-x15.dtb; fi;" \
+		"if test $board_name = am57xx_evm; then " \
 			"setenv fdtfile am57xx-beagle-x15.dtb; fi;" \
 		"if test $fdtfile = undefined; then " \
 			"echo WARNING: Could not determine device tree to use; fi; \0" \
@@ -137,6 +120,7 @@
 		"echo Booting into fastboot ...; fastboot 0;" \
 	"fi;" \
 	"run findfdt; " \
+	"run envboot; " \
 	"run mmcboot;" \
 	"setenv mmcdev 1; " \
 	"setenv bootpart 1:2; " \
@@ -162,6 +146,15 @@
 
 #ifdef CONFIG_NAND
 #define CONFIG_SPL_NAND_AM33XX_BCH	/* ELM support */
+#endif
+
+/*
+ * Disable MMC DM for SPL build and can be re-enabled after adding
+ * DM support in SPL
+ */
+#ifdef CONFIG_SPL_BUILD
+#undef CONFIG_DM_MMC
+#undef CONFIG_TIMER
 #endif
 
 #endif /* __CONFIG_TI_OMAP5_COMMON_H */

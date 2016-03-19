@@ -18,6 +18,14 @@
 #include <generated/generic-asm-offsets.h>
 #include <generated/asm-offsets.h>
 
+/*
+ * Define this to boot U-Boot from a 32-bit program which sets the GDT
+ * differently. This can be used to boot directly from any stage of coreboot,
+ * for example, bypassing the normal payload-loading feature.
+ * This is only useful for development.
+ */
+#undef LOAD_FROM_32_BIT
+
 .section .text
 .code32
 .globl _start
@@ -68,6 +76,10 @@ _start:
 	/* Save table pointer */
 	movl	%ecx, %esi
 
+#ifdef LOAD_FROM_32_BIT
+	lgdt	gdt_ptr2
+#endif
+
 	/* Load the segement registers to match the GDT loaded in start16.S */
 	movl	$(X86_GDT_ENTRY_32BIT_DS * X86_GDT_ENTRY_SIZE), %eax
 	movw	%ax, %fs
@@ -115,23 +127,21 @@ car_init_ret:
 #endif
 #else
 	/*
-	 * When we get here after car_init(), esp points to a temporary stack
-	 * and esi holds the HOB list address returned by the FSP.
+	 * U-Boot enters here twice. For the first time it comes from
+	 * car_init_done() with esp points to a temporary stack and esi
+	 * set to zero. For the second time it comes from fsp_init_done()
+	 * with esi holding the HOB list address returned by the FSP.
 	 */
 #endif
 	/* Set up global data */
 	mov	%esp, %eax
-	call	board_init_f_mem
+	call	board_init_f_alloc_reserve
 	mov	%eax, %esp
+	call	board_init_f_init_reserve
 
-	/*
-	 * Debug UART is available here although it may not be plumbed out
-	 * to pins depending on the board. To use it:
-	 *
-	 * call  debug_uart_init
-	 * mov   $'a', %eax
-	 * call  printch
-	 */
+#ifdef CONFIG_DEBUG_UART
+	call	debug_uart_init
+#endif
 
 	/* Get address of global_data */
 	mov	%fs:0, %edx
@@ -141,6 +151,14 @@ car_init_ret:
 	jz	skip_hob
 	movl	%esi, GD_HOB_LIST(%edx)
 
+	/*
+	 * After fsp_init() returns, the stack has already been switched to a
+	 * place within system memory as defined by CONFIG_FSP_TEMP_RAM_ADDR.
+	 * Enlarge the size of malloc() pool before relocation since we have
+	 * plenty of memory now.
+	 */
+	subl	$CONFIG_FSP_SYS_MALLOC_F_LEN, %esp
+	movl	%esp, GD_MALLOC_BASE(%edx)
 skip_hob:
 #else
 	/* Store table pointer */
@@ -214,3 +232,71 @@ multiboot_header:
 	.long	0
 	/* entry addr */
 	.long	CONFIG_SYS_TEXT_BASE
+
+#ifdef LOAD_FROM_32_BIT
+	/*
+	 * The following Global Descriptor Table is just enough to get us into
+	 * 'Flat Protected Mode' - It will be discarded as soon as the final
+	 * GDT is setup in a safe location in RAM
+	 */
+gdt_ptr2:
+	.word	0x1f		/* limit (31 bytes = 4 GDT entries - 1) */
+	.long	gdt_rom2	/* base */
+
+	/* Some CPUs are picky about GDT alignment... */
+	.align	16
+.globl gdt_rom2
+gdt_rom2:
+	/*
+	 * The GDT table ...
+	 *
+	 *	 Selector	Type
+	 *	 0x00		NULL
+	 *	 0x08		Unused
+	 *	 0x10		32bit code
+	 *	 0x18		32bit data/stack
+	 */
+	/* The NULL Desciptor - Mandatory */
+	.word	0x0000		/* limit_low */
+	.word	0x0000		/* base_low */
+	.byte	0x00		/* base_middle */
+	.byte	0x00		/* access */
+	.byte	0x00		/* flags + limit_high */
+	.byte	0x00		/* base_high */
+
+	/* Unused Desciptor - (matches Linux) */
+	.word	0x0000		/* limit_low */
+	.word	0x0000		/* base_low */
+	.byte	0x00		/* base_middle */
+	.byte	0x00		/* access */
+	.byte	0x00		/* flags + limit_high */
+	.byte	0x00		/* base_high */
+
+	/*
+	 * The Code Segment Descriptor:
+	 * - Base   = 0x00000000
+	 * - Size   = 4GB
+	 * - Access = Present, Ring 0, Exec (Code), Readable
+	 * - Flags  = 4kB Granularity, 32-bit
+	 */
+	.word	0xffff		/* limit_low */
+	.word	0x0000		/* base_low */
+	.byte	0x00		/* base_middle */
+	.byte	0x9b		/* access */
+	.byte	0xcf		/* flags + limit_high */
+	.byte	0x00		/* base_high */
+
+	/*
+	 * The Data Segment Descriptor:
+	 * - Base   = 0x00000000
+	 * - Size   = 4GB
+	 * - Access = Present, Ring 0, Non-Exec (Data), Writable
+	 * - Flags  = 4kB Granularity, 32-bit
+	 */
+	.word	0xffff		/* limit_low */
+	.word	0x0000		/* base_low */
+	.byte	0x00		/* base_middle */
+	.byte	0x93		/* access */
+	.byte	0xcf		/* flags + limit_high */
+	.byte	0x00		/* base_high */
+#endif

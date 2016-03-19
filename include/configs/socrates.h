@@ -17,17 +17,11 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* new uImage format support */
-#define CONFIG_FIT		1
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_FIT_VERBOSE	1 /* enable fit_format_{error,warning}() */
-
 /* High Level Configuration Options */
 #define CONFIG_BOOKE		1	/* BOOKE			*/
 #define CONFIG_E500		1	/* BOOKE e500 family		*/
 #define CONFIG_MPC8544		1
 #define CONFIG_SOCRATES		1
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define	CONFIG_SYS_TEXT_BASE	0xfff80000
@@ -199,7 +193,6 @@
 /* Serial Port */
 
 #define CONFIG_CONS_INDEX     1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -431,8 +424,6 @@
 #define CONFIG_BOOTCOMMAND	"run boot_nor"
 
 /* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
 
 /* USB support */
 #define CONFIG_USB_OHCI_NEW		1

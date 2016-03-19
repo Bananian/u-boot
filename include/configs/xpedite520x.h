@@ -21,7 +21,6 @@
 #define CONFIG_SYS_BOARD_NAME	"XPedite5200"
 #define CONFIG_SYS_FORM_PMC_XMC	1
 #define CONFIG_BOARD_EARLY_INIT_R	/* Call board_pre_init */
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #ifndef CONFIG_SYS_TEXT_BASE
@@ -178,7 +177,6 @@
  * Serial Port
  */
 #define CONFIG_CONS_INDEX		1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -194,13 +192,6 @@
  * Use the HUSH parser
  */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -315,7 +306,6 @@
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_JFFS2
 #define CONFIG_CMD_MII
@@ -343,8 +333,6 @@
 #define CONFIG_BOOTDELAY	3		/* -1 disables auto-boot */
 #define CONFIG_PANIC_HANG			/* do not reset board on panic */
 #define CONFIG_PREBOOT				/* enable preboot variable */
-#define CONFIG_FIT		1
-#define CONFIG_FIT_VERBOSE	1
 #define CONFIG_INTEGRITY			/* support booting INTEGRITY OS */
 #define CONFIG_INTERRUPTS		/* enable pci, srio, ddr interrupts */
 

@@ -20,7 +20,7 @@
 
 #define CONFIG_SYS_HZ			1000
 
-#define CONFIG_IMX6_THERMAL
+#define CONFIG_IMX_THERMAL
 
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS		1
@@ -61,7 +61,6 @@
 
 /* Filesystems / image support */
 #define CONFIG_EFI_PARTITION
-#define CONFIG_FIT
 
 /* MMC */
 #define CONFIG_SYS_FSL_USDHC_NUM	3
@@ -167,6 +166,8 @@
 #ifdef CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_SYS_I2C_SPEED		100000
 #define CONFIG_I2C_EDID
@@ -174,8 +175,8 @@
 
 /* Environment organization */
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_SYS_MMC_ENV_DEV		2
-#define CONFIG_SYS_MMC_ENV_PART		1
+#define CONFIG_SYS_MMC_ENV_DEV		2 /* overwritten on SD boot */
+#define CONFIG_SYS_MMC_ENV_PART		1 /* overwritten on SD boot */
 #define CONFIG_ENV_SIZE			(8 * 1024)
 #define CONFIG_ENV_OFFSET		(384 * 1024)
 #define CONFIG_ENV_OVERWRITE
@@ -190,7 +191,7 @@
 	"bootargs_upd=setenv bootargs console=ttymxc0,115200 " \
 			"rdinit=/sbin/init enable_wait_mode=off\0" \
 	"bootcmd_mmc=run bootargs_mmc; mmc dev 2; " \
-			"mmc read 0x10800000 0x800 0x4000; bootm\0" \
+			"mmc read 0x10800000 0x800 0x4000; bootm 0x10800000\0" \
 	"bootcmd_up1=load mmc 1 0x10800000 uImage\0" \
 	"bootcmd_up2=load mmc 1 0x10d00000 uramdisk.img; " \
 			"run bootargs_upd; " \

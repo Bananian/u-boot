@@ -16,10 +16,7 @@
 #define CONFIG_SYS_MONITOR_LEN		(1 << 20)
 #define CONFIG_ARCH_MISC_INIT
 
-#define CONFIG_PCI_CONFIG_HOST_BRIDGE
-#define CONFIG_SYS_EARLY_PCI_INIT
 #define CONFIG_PCI_PNP
-#define CONFIG_E1000
 
 #define CONFIG_STD_DEVICES_SETTINGS	"stdin=serial,vga,usbkbd\0" \
 					"stdout=serial,vga\0" \
@@ -34,9 +31,6 @@
 #define CONFIG_GENERIC_MMC
 #define CONFIG_MMC_SDMA
 #define CONFIG_CMD_MMC
-
-/* BayTrail IGD support */
-#define CONFIG_VGA_AS_SINGLE_DEVICE
 
 /* Environment configuration */
 #define CONFIG_ENV_SECT_SIZE		0x1000

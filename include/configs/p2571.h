@@ -13,7 +13,6 @@
 #include "tegra210-common.h"
 
 /* High-level configuration options */
-#define V_PROMPT			"Tegra210 (P2571) # "
 #define CONFIG_TEGRA_BOARD_STRING	"NVIDIA P2571"
 
 /* Board-specific serial config */
@@ -37,7 +36,6 @@
 #define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE)
 
 /* SPI */
-#define CONFIG_SPI_FLASH_WINBOND
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #define CONFIG_SF_DEFAULT_SPEED		24000000
 #define CONFIG_CMD_SPI
@@ -47,7 +45,6 @@
 /* USB2.0 Host support */
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_TEGRA
-#define CONFIG_USB_MAX_CONTROLLER_COUNT	1
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_USB
 
@@ -60,8 +57,5 @@
 
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
-
-#define COUNTER_FREQUENCY	38400000
-#define CONFIG_OF_BOARD_SETUP
 
 #endif /* _P2571_H */

@@ -11,7 +11,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 #include "../board/freescale/common/ics307_clk.h"
 
@@ -61,7 +60,6 @@
 #define CONFIG_SYS_PCI_64BIT	1	/* enable 64-bit PCI resources */
 
 #define CONFIG_FSL_LAW		1	/* Use common FSL init code */
-#define CONFIG_E1000		1	/* Defind e1000 pci Ethernet card*/
 
 #define CONFIG_TSEC_ENET		/* tsec ethernet support */
 #define CONFIG_ENV_OVERWRITE
@@ -370,7 +368,6 @@
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -386,13 +383,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -422,10 +412,8 @@
  * eSPI - Enhanced SPI
  */
 #define CONFIG_HARD_SPI
-#define CONFIG_FSL_ESPI
 
 #if defined(CONFIG_SPI_FLASH)
-#define CONFIG_SPI_FLASH_SPANSION
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED	10000000
 #define CONFIG_SF_DEFAULT_MODE	0
@@ -534,7 +522,6 @@
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 #define CONFIG_ATI_RADEON_FB
 #define CONFIG_VIDEO_LOGO
-/*#define CONFIG_CONSOLE_CURSOR*/
 #define CONFIG_SYS_ISA_IO_BASE_ADDRESS CONFIG_SYS_PCIE3_IO_VIRT
 #endif
 
@@ -639,7 +626,6 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_IRQ
 #define CONFIG_CMD_REGINFO
 

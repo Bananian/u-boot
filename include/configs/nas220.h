@@ -24,7 +24,6 @@
  */
 #define CONFIG_FEROCEON_88FR131		/* #define CPU Core subversion */
 #define CONFIG_KW88F6192		/* SOC Name */
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_SKIP_LOWLEVEL_INIT	/* disable board lowlevel_init */
 
 /* power-on led, regulator, sata0, sata1 */
@@ -137,12 +136,6 @@
 #define CONFIG_SYS_ATA_IDE0_OFFSET      MV_SATA_PORT0_OFFSET
 #define CONFIG_SYS_ATA_IDE1_OFFSET      MV_SATA_PORT1_OFFSET
 #endif
-
-
-/*
- * Device Tree
- */
-#define CONFIG_OF_LIBFDT
 
 /*
  * EFI partition

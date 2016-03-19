@@ -17,7 +17,9 @@
 
 #include <errno.h>
 #include <common.h>
+#include <console.h>
 #include <malloc.h>
+#include <memalign.h>
 #include <version.h>
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
@@ -123,6 +125,9 @@ static int process_rqt_cmd(const struct rqt_box *rqt)
 		send_rsp(rsp);
 		g_dnl_unregister();
 		dfu_free_entities();
+#ifdef CONFIG_THOR_RESET_OFF
+		return RESET_DONE;
+#endif
 		run_command("reset", 0);
 		break;
 	case RQT_CMD_POWEROFF:
@@ -565,7 +570,7 @@ static void thor_tx_data(unsigned char *data, int len)
 
 	dev->in_req->length = len;
 
-	debug("%s: dev->in_req->length:%d to_cpy:%d\n", __func__,
+	debug("%s: dev->in_req->length:%d to_cpy:%zd\n", __func__,
 	      dev->in_req->length, sizeof(data));
 
 	status = usb_ep_queue(dev->in_ep, dev->in_req, 0);
@@ -728,6 +733,10 @@ int thor_handle(void)
 
 		if (ret > 0) {
 			ret = process_data();
+#ifdef CONFIG_THOR_RESET_OFF
+			if (ret == RESET_DONE)
+				break;
+#endif
 			if (ret < 0)
 				return ret;
 		} else {
@@ -768,7 +777,7 @@ static int thor_func_bind(struct usb_configuration *c, struct usb_function *f)
 		goto fail;
 	}
 	dev->req->buf = memalign(CONFIG_SYS_CACHELINE_SIZE,
-				 gadget->ep0->maxpacket);
+				 THOR_PACKET_SIZE);
 	if (!dev->req->buf) {
 		status = -ENOMEM;
 		goto fail;

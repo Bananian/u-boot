@@ -14,7 +14,6 @@
 
 #define CONFIG_ARIA 1
 #define CONFIG_DISPLAY_BOARDINFO
-#define CONFIG_SYS_GENERIC_BOARD
 
 /*
  * Memory map for the ARIA board:
@@ -573,8 +572,6 @@
 
 #define CONFIG_BOOTCOMMAND	"run flash_self"
 
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
 #define CONFIG_OF_SUPPORT_OLD_DEVICE_TREES	1
 
 #define OF_CPU			"PowerPC,5121@0"

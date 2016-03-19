@@ -34,9 +34,7 @@
 #define CONFIG_SYS_MMC_ENV_PART		2
 
 /* SPI */
-#define CONFIG_TEGRA20_SLINK
 #define CONFIG_TEGRA_SLINK_CTRLS       6
-#define CONFIG_SPI_FLASH_WINBOND
 #define CONFIG_SF_DEFAULT_MODE         SPI_MODE_0
 #define CONFIG_SF_DEFAULT_SPEED        24000000
 #define CONFIG_CMD_SPI
@@ -60,8 +58,6 @@
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
-/* support the new (FDT-based) image format */
-#define CONFIG_FIT
 
 #include "tegra-common-post.h"
 

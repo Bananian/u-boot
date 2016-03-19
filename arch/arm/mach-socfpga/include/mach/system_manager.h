@@ -12,8 +12,7 @@
 void sysmgr_pinmux_init(void);
 void sysmgr_config_warmrstcfgio(int enable);
 
-void sysmgr_get_pinmux_table(const unsigned long **table,
-			     unsigned int *table_len);
+void sysmgr_get_pinmux_table(const u8 **table, unsigned int *table_len);
 #endif
 
 struct socfpga_system_manager {
@@ -130,9 +129,13 @@ struct socfpga_system_manager {
 #define SYSMGR_FPGAINTF_NAND	(1 << 4)
 #define SYSMGR_FPGAINTF_SDMMC	(1 << 5)
 
-/* FIXME: This is questionable macro. */
-#define SYSMGR_SDMMC_CTRL_SET(smplsel, drvsel)	\
-	((((drvsel) << 0) & 0x7) | (((smplsel) << 3) & 0x38))
+#if defined(CONFIG_TARGET_SOCFPGA_GEN5)
+#define SYSMGR_SDMMC_SMPLSEL_SHIFT	3
+#else
+#define SYSMGR_SDMMC_SMPLSEL_SHIFT	4
+#endif
+
+#define SYSMGR_SDMMC_DRVSEL_SHIFT	0
 
 /* EMAC Group Bit definitions */
 #define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII	0x0

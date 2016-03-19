@@ -12,7 +12,6 @@
 #define CONFIG_PMC405DE		1	/* ...on a PMC405DE board	*/
 
 #define	CONFIG_SYS_TEXT_BASE	0xFFFC0000
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define CONFIG_BOARD_EARLY_INIT_F 1	/* call board_early_init_f()	*/
@@ -59,15 +58,11 @@
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_IRQ
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_PCI
 #define CONFIG_CMD_PING
-
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
 
 #undef  CONFIG_WATCHDOG			/* watchdog disabled */
 #define CONFIG_SDRAM_BANK0	1	/* init onboard SDRAM bank 0 */
@@ -90,7 +85,6 @@
 #define CONFIG_SYS_MEMTEST_END		0x3000000 /* 1 ... 48 MB in DRAM */
 
 #define CONFIG_CONS_INDEX	2	/* Use UART1			*/
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_serial_clock()

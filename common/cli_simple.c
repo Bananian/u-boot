@@ -12,6 +12,7 @@
 #include <common.h>
 #include <bootretry.h>
 #include <cli.h>
+#include <console.h>
 #include <linux/ctype.h>
 
 #define DEBUG_PARSER	0	/* set to 1 to debug */
@@ -258,7 +259,7 @@ int cli_simple_run_command(const char *cmd, int flag)
 
 void cli_simple_loop(void)
 {
-	static char lastcommand[CONFIG_SYS_CBSIZE] = { 0, };
+	static char lastcommand[CONFIG_SYS_CBSIZE + 1] = { 0, };
 
 	int len;
 	int flag;
@@ -275,7 +276,8 @@ void cli_simple_loop(void)
 
 		flag = 0;	/* assume no special flags for now */
 		if (len > 0)
-			strcpy(lastcommand, console_buffer);
+			strlcpy(lastcommand, console_buffer,
+				CONFIG_SYS_CBSIZE + 1);
 		else if (len == 0)
 			flag |= CMD_FLAG_REPEAT;
 #ifdef CONFIG_BOOT_RETRY_TIME

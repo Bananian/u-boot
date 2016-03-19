@@ -10,6 +10,7 @@
 #include <fdtdec.h>
 #include <malloc.h>
 #include <asm/gpio.h>
+#include <linux/bug.h>
 #include <linux/ctype.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -154,6 +155,7 @@ int dm_gpio_request(struct gpio_desc *desc, const char *label)
 
 static int dm_gpio_requestf(struct gpio_desc *desc, const char *fmt, ...)
 {
+#if !defined(CONFIG_SPL_BUILD) || !defined(CONFIG_USE_TINY_PRINTF)
 	va_list args;
 	char buf[40];
 
@@ -161,6 +163,9 @@ static int dm_gpio_requestf(struct gpio_desc *desc, const char *fmt, ...)
 	vscnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 	return dm_gpio_request(desc, buf);
+#else
+	return dm_gpio_request(desc, fmt);
+#endif
 }
 
 /**
@@ -199,6 +204,7 @@ int gpio_request(unsigned gpio, const char *label)
  */
 int gpio_requestf(unsigned gpio, const char *fmt, ...)
 {
+#if !defined(CONFIG_SPL_BUILD) || !defined(CONFIG_USE_TINY_PRINTF)
 	va_list args;
 	char buf[40];
 
@@ -206,6 +212,9 @@ int gpio_requestf(unsigned gpio, const char *fmt, ...)
 	vscnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 	return gpio_request(gpio, buf);
+#else
+	return gpio_request(gpio, fmt);
+#endif
 }
 
 int _dm_gpio_free(struct udevice *dev, uint offset)
@@ -248,7 +257,7 @@ int gpio_free(unsigned gpio)
 	return _dm_gpio_free(desc.dev, desc.offset);
 }
 
-static int check_reserved(struct gpio_desc *desc, const char *func)
+static int check_reserved(const struct gpio_desc *desc, const char *func)
 {
 	struct gpio_dev_priv *uc_priv;
 
@@ -315,7 +324,7 @@ int gpio_direction_output(unsigned gpio, int value)
 							desc.offset, value);
 }
 
-int dm_gpio_get_value(struct gpio_desc *desc)
+int dm_gpio_get_value(const struct gpio_desc *desc)
 {
 	int value;
 	int ret;
@@ -329,7 +338,7 @@ int dm_gpio_get_value(struct gpio_desc *desc)
 	return desc->flags & GPIOD_ACTIVE_LOW ? !value : value;
 }
 
-int dm_gpio_set_value(struct gpio_desc *desc, int value)
+int dm_gpio_set_value(const struct gpio_desc *desc, int value)
 {
 	int ret;
 
@@ -568,6 +577,24 @@ int gpio_get_values_as_int(const int *gpio_list)
 	return vector;
 }
 
+int dm_gpio_get_values_as_int(const struct gpio_desc *desc_list, int count)
+{
+	unsigned bitmask = 1;
+	unsigned vector = 0;
+	int ret, i;
+
+	for (i = 0; i < count; i++) {
+		ret = dm_gpio_get_value(&desc_list[i]);
+		if (ret < 0)
+			return ret;
+		else if (ret)
+			vector |= bitmask;
+		bitmask <<= 1;
+	}
+
+	return vector;
+}
+
 static int _gpio_request_by_name_nodev(const void *blob, int node,
 				       const char *list_name, int index,
 				       struct gpio_desc *desc, int flags,
@@ -739,7 +766,7 @@ static int gpio_renumber(struct udevice *removed_dev)
 	return 0;
 }
 
-int gpio_get_number(struct gpio_desc *desc)
+int gpio_get_number(const struct gpio_desc *desc)
 {
 	struct udevice *dev = desc->dev;
 	struct gpio_dev_priv *uc_priv;

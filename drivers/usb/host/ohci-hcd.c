@@ -41,6 +41,7 @@
 #endif
 
 #include <malloc.h>
+#include <memalign.h>
 #include <usb.h>
 
 #include "ohci.h"
@@ -2204,6 +2205,7 @@ int ohci_register(struct udevice *dev, struct ohci_regs *regs)
 	if (!ohci->hcca)
 		return -ENOMEM;
 	memset(ohci->hcca, 0, sizeof(struct ohci_hcca));
+	flush_dcache_hcca(ohci->hcca);
 
 	if (hc_reset(ohci) < 0)
 		return -EIO;

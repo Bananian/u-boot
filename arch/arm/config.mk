@@ -40,7 +40,8 @@ ifeq ($(CONFIG_SYS_THUMB_BUILD),y)
 archprepare: checkthumb
 
 checkthumb:
-	@if test "$(call cc-version)" -lt "0404"; then \
+	@if test "$(call cc-name)" = "gcc" -a \
+			"$(call cc-version)" -lt "0404"; then \
 		echo -n '*** Your GCC does not produce working '; \
 		echo 'binaries in THUMB mode.'; \
 		echo '*** Your board is configured for THUMB mode.'; \
@@ -106,6 +107,7 @@ ALL-y += checkarmreloc
 # instruction. Relocation is not supported for that case, so disable
 # such usage by requiring word relocations.
 PLATFORM_CPPFLAGS += $(call cc-option, -mword-relocations)
+PLATFORM_CPPFLAGS += $(call cc-option, -fno-pic)
 endif
 
 # limit ourselves to the sections we want in the .bin.
@@ -118,6 +120,10 @@ endif
 
 ifdef CONFIG_OF_EMBED
 OBJCOPYFLAGS += -j .dtb.init.rodata
+endif
+
+ifdef CONFIG_EFI_LOADER
+OBJCOPYFLAGS += -j .efi_runtime -j .efi_runtime_rel
 endif
 
 ifneq ($(CONFIG_IMX_CONFIG),)

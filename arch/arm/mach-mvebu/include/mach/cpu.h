@@ -65,10 +65,14 @@ enum {
 /*
  * Default Device Address MAP BAR values
  */
-#define DEFADR_PCI_MEM		0x90000000
-#define DEFADR_PCI_IO		0xC0000000
-#define DEFADR_SPIF		0xF4000000
-#define DEFADR_BOOTROM		0xF8000000
+#define MBUS_PCI_MEM_BASE	0xE8000000
+#define MBUS_PCI_MEM_SIZE	(128 << 20)
+#define MBUS_PCI_IO_BASE	0xF1100000
+#define MBUS_PCI_IO_SIZE	(64 << 10)
+#define MBUS_SPI_BASE		0xF4000000
+#define MBUS_SPI_SIZE		(8 << 20)
+#define MBUS_BOOTROM_BASE	0xF8000000
+#define MBUS_BOOTROM_SIZE	(8 << 20)
 
 struct mbus_win {
 	u32 base;
@@ -102,6 +106,14 @@ struct kwgpio_registers {
 	u32 irq_level;
 };
 
+struct sar_freq_modes {
+	u8 val;
+	u8 ffc;		/* Fabric Frequency Configuration */
+	u32 p_clk;
+	u32 nb_clk;
+	u32 d_clk;
+};
+
 /* Needed for dynamic (board-specific) mbus configuration */
 extern struct mvebu_mbus_state mbus_state;
 
@@ -113,8 +125,13 @@ unsigned int mvebu_sdram_bs(enum memory_bank bank);
 void mvebu_sdram_size_adjust(enum memory_bank bank);
 int mvebu_mbus_probe(struct mbus_win windows[], int count);
 int mvebu_soc_family(void);
+u32 mvebu_get_nand_clock(void);
+
+void return_to_bootrom(void);
 
 int mv_sdh_init(unsigned long regbase, u32 max_clk, u32 min_clk, u32 quirks);
+
+void get_sar_freq(struct sar_freq_modes *sar_freq);
 
 /*
  * Highspeed SERDES PHY config init, ported from bin_hdr
@@ -128,5 +145,18 @@ int serdes_phy_config(void);
  * drivers/ddr/marvell
  */
 int ddr3_init(void);
+
+struct mvebu_lcd_info {
+	u32 fb_base;
+	int x_res;
+	int y_res;
+	int x_fp;		/* frontporch */
+	int y_fp;
+	int x_bp;		/* backporch */
+	int y_bp;
+};
+
+int mvebu_lcd_register_init(struct mvebu_lcd_info *lcd_info);
+
 #endif /* __ASSEMBLY__ */
 #endif /* _MVEBU_CPU_H */

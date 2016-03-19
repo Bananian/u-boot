@@ -25,7 +25,7 @@ unsigned int external_clk[ext_clk_count] = {
 static struct pll_init_data core_pll_config[NUM_SPDS] = {
 	[SPD800]	= CORE_PLL_799,
 	[SPD1000]	= CORE_PLL_1000,
-	[SPD800]	= CORE_PLL_1198,
+	[SPD1200]	= CORE_PLL_1198,
 };
 
 s16 divn_val[16] = {
@@ -50,11 +50,11 @@ struct pll_init_data *get_pll_init_data(int pll)
 
 	switch (pll) {
 	case MAIN_PLL:
-		speed = get_max_dev_speed();
+		speed = get_max_dev_speed(speeds);
 		data = &core_pll_config[speed];
 		break;
 	case TETRIS_PLL:
-		speed = get_max_arm_speed();
+		speed = get_max_arm_speed(speeds);
 		data = &tetris_pll_config[speed];
 		break;
 	case PASS_PLL:
@@ -75,6 +75,7 @@ struct eth_priv_t eth_priv_cfg[] = {
 		.phy_addr        = 0,
 		.slave_port      = 1,
 		.sgmii_link_type = SGMII_LINK_MAC_PHY,
+		.phy_if          = PHY_INTERFACE_MODE_SGMII,
 	},
 	{
 		.int_name        = "K2L_EMAC1",
@@ -82,6 +83,7 @@ struct eth_priv_t eth_priv_cfg[] = {
 		.phy_addr        = 1,
 		.slave_port      = 2,
 		.sgmii_link_type = SGMII_LINK_MAC_PHY,
+		.phy_if          = PHY_INTERFACE_MODE_SGMII,
 	},
 	{
 		.int_name        = "K2L_EMAC2",
@@ -89,6 +91,7 @@ struct eth_priv_t eth_priv_cfg[] = {
 		.phy_addr        = 2,
 		.slave_port      = 3,
 		.sgmii_link_type = SGMII_LINK_MAC_MAC_FORCED,
+		.phy_if          = PHY_INTERFACE_MODE_SGMII,
 	},
 	{
 		.int_name        = "K2L_EMAC3",
@@ -96,6 +99,7 @@ struct eth_priv_t eth_priv_cfg[] = {
 		.phy_addr        = 3,
 		.slave_port      = 4,
 		.sgmii_link_type = SGMII_LINK_MAC_MAC_FORCED,
+		.phy_if          = PHY_INTERFACE_MODE_SGMII,
 	},
 };
 

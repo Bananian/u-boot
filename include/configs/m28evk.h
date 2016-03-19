@@ -12,8 +12,6 @@
 #define MACH_TYPE_M28EVK	3613
 #define CONFIG_MACH_TYPE	MACH_TYPE_M28EVK
 
-#define CONFIG_FIT
-
 #define CONFIG_TIMESTAMP		/* Print image info with timestamp */
 
 /* U-Boot Commands */
@@ -32,7 +30,6 @@
 #define CONFIG_CMD_EXT4_WRITE
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_FS_GENERIC
-#define CONFIG_CMD_GPIO
 #define CONFIG_CMD_GREPENV
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
@@ -92,7 +89,6 @@
 
 /* EEPROM */
 #ifdef CONFIG_CMD_EEPROM
-#define CONFIG_SYS_I2C_MULTI_EEPROMS
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	2
 #endif
 
@@ -125,7 +121,6 @@
 
 /* SPI FLASH */
 #ifdef CONFIG_CMD_SF
-#define CONFIG_SPI_FLASH_STMICRO
 #define CONFIG_SF_DEFAULT_BUS		2
 #define CONFIG_SF_DEFAULT_CS		0
 #define CONFIG_SF_DEFAULT_SPEED		40000000

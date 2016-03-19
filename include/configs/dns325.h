@@ -26,7 +26,6 @@
 #define CONFIG_FEROCEON_88FR131		/* CPU Core subversion */
 #define CONFIG_KW88F6281		/* SOC Name */
 #define CONFIG_SKIP_LOWLEVEL_INIT	/* disable board lowlevel_init */
-#define CONFIG_SYS_GENERIC_BOARD
 
 /*
  * Commands configuration
@@ -90,11 +89,6 @@
  */
 #define CONFIG_CONSOLE_MUX
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
-
-/*
- * Enable device tree support
- */
-#define CONFIG_OF_LIBFDT
 
 /*
  * Display cpu info at boot

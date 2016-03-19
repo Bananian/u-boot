@@ -11,8 +11,6 @@
 #define HI6220_GPIO_BASE(bank)	(((bank < 4) ? 0xf8011000 : \
 				0xf7020000 - 0x4000) + (0x1000 * bank))
 
-#define BIT(x)			(1 << (x))
-
 #define HI6220_GPIO_PER_BANK	8
 #define HI6220_GPIO_DIR		0x400
 
@@ -23,7 +21,7 @@ struct gpio_bank {
 /* Information about a GPIO bank */
 struct hikey_gpio_platdata {
 	int bank_index;
-	unsigned int base;     /* address of registers in physical memory */
+	ulong base;     /* address of registers in physical memory */
 };
 
 #endif /* _HI6220_GPIO_H_ */

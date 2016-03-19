@@ -32,34 +32,34 @@
  */
 
 /* SPI Control Register (spicr), [1] p9, [2] p8 */
-#define SPICR_LSB_FIRST		(1 << 9)
-#define SPICR_MASTER_INHIBIT	(1 << 8)
-#define SPICR_MANUAL_SS		(1 << 7)
-#define SPICR_RXFIFO_RESEST	(1 << 6)
-#define SPICR_TXFIFO_RESEST	(1 << 5)
-#define SPICR_CPHA		(1 << 4)
-#define SPICR_CPOL		(1 << 3)
-#define SPICR_MASTER_MODE	(1 << 2)
-#define SPICR_SPE		(1 << 1)
-#define SPICR_LOOP		(1 << 0)
+#define SPICR_LSB_FIRST		BIT(9)
+#define SPICR_MASTER_INHIBIT	BIT(8)
+#define SPICR_MANUAL_SS		BIT(7)
+#define SPICR_RXFIFO_RESEST	BIT(6)
+#define SPICR_TXFIFO_RESEST	BIT(5)
+#define SPICR_CPHA		BIT(4)
+#define SPICR_CPOL		BIT(3)
+#define SPICR_MASTER_MODE	BIT(2)
+#define SPICR_SPE		BIT(1)
+#define SPICR_LOOP		BIT(0)
 
 /* SPI Status Register (spisr), [1] p11, [2] p10 */
-#define SPISR_SLAVE_MODE_SELECT	(1 << 5)
-#define SPISR_MODF		(1 << 4)
-#define SPISR_TX_FULL		(1 << 3)
-#define SPISR_TX_EMPTY		(1 << 2)
-#define SPISR_RX_FULL		(1 << 1)
-#define SPISR_RX_EMPTY		(1 << 0)
+#define SPISR_SLAVE_MODE_SELECT	BIT(5)
+#define SPISR_MODF		BIT(4)
+#define SPISR_TX_FULL		BIT(3)
+#define SPISR_TX_EMPTY		BIT(2)
+#define SPISR_RX_FULL		BIT(1)
+#define SPISR_RX_EMPTY		BIT(0)
 
 /* SPI Data Transmit Register (spidtr), [1] p12, [2] p12 */
-#define SPIDTR_8BIT_MASK	(0xff << 0)
-#define SPIDTR_16BIT_MASK	(0xffff << 0)
-#define SPIDTR_32BIT_MASK	(0xffffffff << 0)
+#define SPIDTR_8BIT_MASK	GENMASK(7, 0)
+#define SPIDTR_16BIT_MASK	GENMASK(15, 0)
+#define SPIDTR_32BIT_MASK	GENMASK(31, 0)
 
 /* SPI Data Receive Register (spidrr), [1] p12, [2] p12 */
-#define SPIDRR_8BIT_MASK	(0xff << 0)
-#define SPIDRR_16BIT_MASK	(0xffff << 0)
-#define SPIDRR_32BIT_MASK	(0xffffffff << 0)
+#define SPIDRR_8BIT_MASK	GENMASK(7, 0)
+#define SPIDRR_16BIT_MASK	GENMASK(15, 0)
+#define SPIDRR_32BIT_MASK	GENMASK(31, 0)
 
 /* SPI Slave Select Register (spissr), [1] p13, [2] p13 */
 #define SPISSR_MASK(cs)		(1 << (cs))
@@ -75,7 +75,7 @@
 #define XILSPI_SPICR_DFLT_OFF	(SPICR_MASTER_INHIBIT | SPICR_MANUAL_SS)
 
 #ifndef CONFIG_XILINX_SPI_IDLE_VAL
-#define CONFIG_XILINX_SPI_IDLE_VAL	0xff
+#define CONFIG_XILINX_SPI_IDLE_VAL	GENMASK(7, 0)
 #endif
 
 #ifndef CONFIG_SYS_XILINX_SPI_LIST
@@ -247,7 +247,7 @@ static int xilinx_spi_set_speed(struct udevice *bus, uint speed)
 
 	priv->freq = speed;
 
-	debug("xilinx_spi_set_speed: regs=%p, mode=%d\n", priv->regs,
+	debug("xilinx_spi_set_speed: regs=%p, speed=%d\n", priv->regs,
 	      priv->freq);
 
 	return 0;
@@ -260,13 +260,13 @@ static int xilinx_spi_set_mode(struct udevice *bus, uint mode)
 	uint32_t spicr;
 
 	spicr = readl(&regs->spicr);
-	if (priv->mode & SPI_LSB_FIRST)
+	if (mode & SPI_LSB_FIRST)
 		spicr |= SPICR_LSB_FIRST;
-	if (priv->mode & SPI_CPHA)
+	if (mode & SPI_CPHA)
 		spicr |= SPICR_CPHA;
-	if (priv->mode & SPI_CPOL)
+	if (mode & SPI_CPOL)
 		spicr |= SPICR_CPOL;
-	if (priv->mode & SPI_LOOP)
+	if (mode & SPI_LOOP)
 		spicr |= SPICR_LOOP;
 
 	writel(spicr, &regs->spicr);
@@ -287,7 +287,8 @@ static const struct dm_spi_ops xilinx_spi_ops = {
 };
 
 static const struct udevice_id xilinx_spi_ids[] = {
-	{ .compatible = "xlnx,xilinx-spi" },
+	{ .compatible = "xlnx,xps-spi-2.00.a" },
+	{ .compatible = "xlnx,xps-spi-2.00.b" },
 	{ }
 };
 

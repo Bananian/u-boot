@@ -14,10 +14,12 @@
  * High Level Board Configuration Options
  */
 #define	CONFIG_CPU_PXA27X		1	/* Marvell PXA270 CPU */
-#define CONFIG_SYS_GENERIC_BOARD
 #define	CONFIG_SYS_TEXT_BASE		0x0
 /* Avoid overwriting factory configuration block */
 #define CONFIG_BOARD_SIZE_LIMIT		0x40000
+
+/* We will never enable dcache because we have to setup MMU first */
+#define CONFIG_SYS_DCACHE_OFF
 
 /*
  * Environment settings
@@ -39,7 +41,6 @@
 #define	CONFIG_CMDLINE_TAG
 #define	CONFIG_SETUP_MEMORY_TAGS
 #define	CONFIG_LZMA			/* LZMA compression support */
-#define	CONFIG_OF_LIBFDT
 
 /*
  * Serial Console Configuration
@@ -55,6 +56,25 @@
 #define	CONFIG_CMD_ENV
 #define	CONFIG_CMD_MMC
 #define	CONFIG_CMD_USB
+
+/* I2C support */
+#ifdef CONFIG_SYS_I2C
+#define CONFIG_CMD_I2C
+#define CONFIG_SYS_I2C_PXA
+#define CONFIG_PXA_STD_I2C
+#define CONFIG_PXA_PWR_I2C
+#define CONFIG_SYS_I2C_SPEED		100000
+#endif
+
+/* LCD support */
+#ifdef CONFIG_LCD
+#define CONFIG_PXA_LCD
+#define CONFIG_PXA_VGA
+#define CONFIG_SYS_WHITE_ON_BLACK
+#define CONFIG_CONSOLE_SCROLL_LINES	10
+#define CONFIG_CMD_BMP
+#define CONFIG_LCD_LOGO
+#endif
 
 /*
  * Networking Configuration
@@ -122,16 +142,20 @@
  */
 #ifdef	CONFIG_CMD_FLASH
 #define	PHYS_FLASH_1			0x00000000	/* Flash Bank #1 */
+#define	PHYS_FLASH_SIZE			0x02000000	/* 32 MB */
 #define	CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1
 
 #define	CONFIG_SYS_FLASH_CFI
 #define	CONFIG_FLASH_CFI_DRIVER		1
+#define	CONFIG_SYS_FLASH_CFI_WIDTH      FLASH_CFI_32BIT
 
 #define	CONFIG_SYS_MAX_FLASH_SECT	(4 + 255)
 #define	CONFIG_SYS_MAX_FLASH_BANKS	1
 
 #define	CONFIG_SYS_FLASH_ERASE_TOUT	(25 * CONFIG_SYS_HZ)
 #define	CONFIG_SYS_FLASH_WRITE_TOUT	(25 * CONFIG_SYS_HZ)
+#define	CONFIG_SYS_FLASH_LOCK_TOUT	(25 * CONFIG_SYS_HZ)
+#define	CONFIG_SYS_FLASH_UNLOCK_TOUT	(25 * CONFIG_SYS_HZ)
 
 #define	CONFIG_SYS_FLASH_USE_BUFFER_WRITE	1
 #define	CONFIG_SYS_FLASH_PROTECTION		1

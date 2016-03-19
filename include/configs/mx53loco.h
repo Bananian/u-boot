@@ -22,7 +22,7 @@
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
 
-#define CONFIG_SYS_GENERIC_BOARD
+#define CONFIG_SYS_FSL_CLK
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(10 * 1024 * 1024)
@@ -76,6 +76,8 @@
 /* I2C Configs */
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 
 /* PMIC Controller */
@@ -214,8 +216,6 @@
 #define CONFIG_ENV_SIZE        (8 * 1024)
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_SYS_MMC_ENV_DEV 0
-
-#define CONFIG_OF_LIBFDT
 
 #define CONFIG_CMD_SATA
 #ifdef CONFIG_CMD_SATA

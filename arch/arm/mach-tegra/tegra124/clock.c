@@ -732,7 +732,7 @@ void reset_set_enable(enum periph_id periph_id, int enable)
 	writel(reg, reset);
 }
 
-#ifdef CONFIG_OF_CONTROL
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 /*
  * Convert a device tree clock ID to our peripheral ID. They are mostly
  * the same but we are very cautious so we check that a valid clock ID is
@@ -798,7 +798,7 @@ enum periph_id clk_id_to_periph_id(int clk_id)
 		return clk_id;
 	}
 }
-#endif /* CONFIG_OF_CONTROL */
+#endif /* CONFIG_IS_ENABLED(OF_CONTROL) */
 
 void clock_early_init(void)
 {
@@ -808,6 +808,11 @@ void clock_early_init(void)
 	u32 data;
 
 	tegra30_set_up_pllp();
+
+	/* clear IDDQ before accessing any other PLLC registers */
+	pllinfo = &tegra_pll_info_table[CLOCK_ID_CGENERAL];
+	clrbits_le32(&clkrst->crc_pll[CLOCK_ID_CGENERAL].pll_misc, PLLC_IDDQ);
+	udelay(2);
 
 	/*
 	 * PLLC output frequency set to 600Mhz
@@ -859,8 +864,8 @@ void arch_timer_init(void)
 	struct sysctr_ctlr *sysctr = (struct sysctr_ctlr *)NV_PA_TSC_BASE;
 	u32 freq, val;
 
-	freq = clock_get_rate(CLOCK_ID_OSC);
-	debug("%s: osc freq is %dHz [0x%08X]\n", __func__, freq, freq);
+	freq = clock_get_rate(CLOCK_ID_CLK_M);
+	debug("%s: clk_m freq is %dHz [0x%08X]\n", __func__, freq, freq);
 
 	/* ARM CNTFRQ */
 	asm("mcr p15, 0, %0, c14, c0, 0\n" : : "r" (freq));

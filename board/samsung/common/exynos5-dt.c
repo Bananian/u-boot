@@ -27,7 +27,10 @@
 #include <power/pmic.h>
 #include <power/max77686_pmic.h>
 #include <power/regulator.h>
+#include <power/s2mps11.h>
 #include <power/s5m8767.h>
+#include <samsung/exynos5-dt-types.h>
+#include <samsung/misc.h>
 #include <tmu.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -121,11 +124,12 @@ int exynos_power_init(void)
 		return ret;
 
 	/*
-	 * This would normally be 1.3V, but since we are running slowly 1V
+	 * This would normally be 1.3V, but since we are running slowly 1.1V
 	 * is enough. For spring it helps reduce CPU temperature and avoid
-	 * hangs with the case open.
+	 * hangs with the case open. 1.1V is minimum voltage borderline for
+	 * chained bootloaders.
 	 */
-	ret = exynos_set_regulator("vdd_arm", 1000000);
+	ret = exynos_set_regulator("vdd_arm", 1100000);
 	if (ret)
 		return ret;
 	ret = exynos_set_regulator("vdd_int", 1012500);
@@ -334,14 +338,23 @@ int board_usb_init(int index, enum usb_init_type init)
 #ifdef CONFIG_SET_DFU_ALT_INFO
 char *get_dfu_alt_system(char *interface, char *devstr)
 {
+	char *info = "Not supported!";
+
+	if (board_is_odroidxu4())
+		return info;
+
 	return getenv("dfu_alt_system");
 }
 
 char *get_dfu_alt_boot(char *interface, char *devstr)
 {
+	char *info = "Not supported!";
 	struct mmc *mmc;
 	char *alt_boot;
 	int dev_num;
+
+	if (board_is_odroidxu4())
+		return info;
 
 	dev_num = simple_strtoul(devstr, NULL, 10);
 

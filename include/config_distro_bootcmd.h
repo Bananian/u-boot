@@ -72,6 +72,66 @@
 	BOOT_TARGET_DEVICES_references_MMC_without_CONFIG_CMD_MMC
 #endif
 
+#ifdef CONFIG_CMD_UBIFS
+#define BOOTENV_SHARED_UBIFS \
+	"ubifs_boot=" \
+		"if ubi part UBI && ubifsmount ubi${devnum}:boot; then "  \
+			"setenv devtype ubi; "                            \
+			"setenv bootpart 0; "                             \
+			"run scan_dev_for_boot; "                         \
+		"fi\0"
+#define BOOTENV_DEV_UBIFS	BOOTENV_DEV_BLKDEV
+#define BOOTENV_DEV_NAME_UBIFS	BOOTENV_DEV_NAME_BLKDEV
+#else
+#define BOOTENV_SHARED_UBIFS
+#define BOOTENV_DEV_UBIFS \
+	BOOT_TARGET_DEVICES_references_UBIFS_without_CONFIG_CMD_UBIFS
+#define BOOTENV_DEV_NAME_UBIFS \
+	BOOT_TARGET_DEVICES_references_UBIFS_without_CONFIG_CMD_UBIFS
+#endif
+
+#ifdef CONFIG_EFI_LOADER
+#if defined(CONFIG_ARM64)
+#define BOOTEFI_NAME "bootaa64.efi"
+#elif defined(CONFIG_ARM)
+#define BOOTEFI_NAME "bootarm.efi"
+#endif
+#endif
+
+#ifdef BOOTEFI_NAME
+#define BOOTENV_SHARED_EFI                                                \
+	"boot_efi_binary="                                                \
+		"load ${devtype} ${devnum}:${distro_bootpart} "           \
+			"${kernel_addr_r} efi/boot/"BOOTEFI_NAME"; "      \
+		"bootefi ${kernel_addr_r}\0"                              \
+	\
+	"load_efi_dtb="                                                   \
+		"load ${devtype} ${devnum}:${distro_bootpart} "           \
+			"${fdt_addr_r} ${prefix}${fdtfile}; "             \
+		"fdt addr ${fdt_addr_r}\0"                                \
+	\
+	"efi_dtb_prefixes=/ /dtb/ /dtb/current/\0"                        \
+	"scan_dev_for_efi="                                               \
+		"for prefix in ${efi_dtb_prefixes}; do "                  \
+			"if test -e ${devtype} "                          \
+					"${devnum}:${distro_bootpart} "   \
+					"${prefix}${fdtfile}; then "      \
+				"run load_efi_dtb; "                      \
+			"fi;"                                             \
+		"done;"                                                   \
+		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
+					"efi/boot/"BOOTEFI_NAME"; then "  \
+				"echo Found EFI removable media binary "  \
+					"efi/boot/"BOOTEFI_NAME"; "       \
+				"run boot_efi_binary; "                   \
+				"echo EFI LOAD FAILED: continuing...; "   \
+		"fi; \0"
+#define SCAN_DEV_FOR_EFI "run scan_dev_for_efi;"
+#else
+#define BOOTENV_SHARED_EFI
+#define SCAN_DEV_FOR_EFI
+#endif
+
 #ifdef CONFIG_CMD_SATA
 #define BOOTENV_SHARED_SATA	BOOTENV_SHARED_BLKDEV(sata)
 #define BOOTENV_DEV_SATA	BOOTENV_DEV_BLKDEV
@@ -121,16 +181,26 @@
 	BOOT_TARGET_DEVICES_references_IDE_without_CONFIG_CMD_IDE
 #endif
 
+#if defined(CONFIG_CMD_PCI_ENUM) || defined(CONFIG_DM_PCI)
+#define BOOTENV_RUN_NET_PCI_ENUM "run boot_net_pci_enum; "
+#define BOOTENV_SHARED_PCI \
+	"boot_net_pci_enum=pci enum\0"
+#else
+#define BOOTENV_RUN_NET_PCI_ENUM
+#define BOOTENV_SHARED_PCI
+#endif
+
 #ifdef CONFIG_CMD_USB
-#define BOOTENV_RUN_USB_INIT "usb start; "
+#define BOOTENV_RUN_NET_USB_START "run boot_net_usb_start; "
 #define BOOTENV_SHARED_USB \
+	"boot_net_usb_start=usb start\0" \
 	"usb_boot=" \
-		BOOTENV_RUN_USB_INIT \
+		"usb start; " \
 		BOOTENV_SHARED_BLKDEV_BODY(usb)
 #define BOOTENV_DEV_USB		BOOTENV_DEV_BLKDEV
 #define BOOTENV_DEV_NAME_USB	BOOTENV_DEV_NAME_BLKDEV
 #else
-#define BOOTENV_RUN_USB_INIT
+#define BOOTENV_RUN_NET_USB_START
 #define BOOTENV_SHARED_USB
 #define BOOTENV_DEV_USB \
 	BOOT_TARGET_DEVICES_references_USB_without_CONFIG_CMD_USB
@@ -141,7 +211,8 @@
 #if defined(CONFIG_CMD_DHCP)
 #define BOOTENV_DEV_DHCP(devtypeu, devtypel, instance) \
 	"bootcmd_dhcp=" \
-		BOOTENV_RUN_USB_INIT \
+		BOOTENV_RUN_NET_USB_START \
+		BOOTENV_RUN_NET_PCI_ENUM \
 		"if dhcp ${scriptaddr} ${boot_script_dhcp}; then " \
 			"source ${scriptaddr}; " \
 		"fi\0"
@@ -157,7 +228,8 @@
 #if defined(CONFIG_CMD_DHCP) && defined(CONFIG_CMD_PXE)
 #define BOOTENV_DEV_PXE(devtypeu, devtypel, instance) \
 	"bootcmd_pxe=" \
-		BOOTENV_RUN_USB_INIT \
+		BOOTENV_RUN_NET_USB_START \
+		BOOTENV_RUN_NET_PCI_ENUM \
 		"dhcp; " \
 		"if pxe get; then " \
 			"pxe boot; " \
@@ -181,21 +253,25 @@
 #define BOOTENV \
 	BOOTENV_SHARED_HOST \
 	BOOTENV_SHARED_MMC \
+	BOOTENV_SHARED_PCI \
 	BOOTENV_SHARED_USB \
 	BOOTENV_SHARED_SATA \
 	BOOTENV_SHARED_SCSI \
 	BOOTENV_SHARED_IDE \
+	BOOTENV_SHARED_UBIFS \
+	BOOTENV_SHARED_EFI \
 	"boot_prefixes=/ /boot/\0" \
 	"boot_scripts=boot.scr.uimg boot.scr\0" \
 	"boot_script_dhcp=boot.scr.uimg\0" \
 	BOOTENV_BOOT_TARGETS \
 	\
 	"boot_extlinux="                                                  \
-		"sysboot ${devtype} ${devnum}:${bootpart} any "           \
+		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
 			"${scriptaddr} ${prefix}extlinux/extlinux.conf\0" \
 	\
 	"scan_dev_for_extlinux="                                          \
-		"if test -e ${devtype} ${devnum}:${bootpart} "            \
+		"if test -e ${devtype} "                                  \
+				"${devnum}:${distro_bootpart} "           \
 				"${prefix}extlinux/extlinux.conf; then "  \
 			"echo Found ${prefix}extlinux/extlinux.conf; "    \
 			"run boot_extlinux; "                             \
@@ -203,13 +279,14 @@
 		"fi\0"                                                    \
 	\
 	"boot_a_script="                                                  \
-		"load ${devtype} ${devnum}:${bootpart} "                  \
+		"load ${devtype} ${devnum}:${distro_bootpart} "           \
 			"${scriptaddr} ${prefix}${script}; "              \
 		"source ${scriptaddr}\0"                                  \
 	\
 	"scan_dev_for_scripts="                                           \
 		"for script in ${boot_scripts}; do "                      \
-			"if test -e ${devtype} ${devnum}:${bootpart} "    \
+			"if test -e ${devtype} "                          \
+					"${devnum}:${distro_bootpart} "   \
 					"${prefix}${script}; then "       \
 				"echo Found U-Boot script "               \
 					"${prefix}${script}; "            \
@@ -219,17 +296,21 @@
 		"done\0"                                                  \
 	\
 	"scan_dev_for_boot="                                              \
-		"echo Scanning ${devtype} ${devnum}:${bootpart}...; "     \
+		"echo Scanning ${devtype} "                               \
+				"${devnum}:${distro_bootpart}...; "       \
 		"for prefix in ${boot_prefixes}; do "                     \
 			"run scan_dev_for_extlinux; "                     \
 			"run scan_dev_for_scripts; "                      \
-		"done\0"                                                  \
+		"done;"                                                   \
+		SCAN_DEV_FOR_EFI                                          \
+		"\0"                                                      \
 	\
 	"scan_dev_for_boot_part="                                         \
 		"part list ${devtype} ${devnum} -bootable devplist; "     \
 		"env exists devplist || setenv devplist 1; "              \
-		"for bootpart in ${devplist}; do "                        \
-			"if fstype ${devtype} ${devnum}:${bootpart} "     \
+		"for distro_bootpart in ${devplist}; do "                 \
+			"if fstype ${devtype} "                           \
+					"${devnum}:${distro_bootpart} "   \
 					"bootfstype; then "               \
 				"run scan_dev_for_boot; "                 \
 			"fi; "                                            \

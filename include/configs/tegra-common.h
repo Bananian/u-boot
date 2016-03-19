@@ -37,24 +37,9 @@
 #define CONFIG_ENV_SIZE			0x2000	/* Total Size Environment */
 
 /*
- * Size of malloc() pool
- */
-#ifdef CONFIG_DFU_MMC
-#define CONFIG_SYS_MALLOC_LEN		((4 << 20) + \
-					CONFIG_SYS_DFU_DATA_BUF_SIZE)
-#else
-#define CONFIG_SYS_MALLOC_LEN		(4 << 20)	/* 4MB  */
-#endif
-
-#ifndef CONFIG_ARM64
-#define CONFIG_SYS_NONCACHED_MEMORY	(1 << 20)       /* 1 MiB */
-#endif
-
-/*
  * NS16550 Configuration
  */
-#define CONFIG_TEGRA_SERIAL
-#define CONFIG_SYS_NS16550
+#define CONFIG_SYS_NS16550_CLK		V_NS16550_CLK
 
 /*
  * Common HW configuration.
@@ -127,7 +112,6 @@
 						GENERATED_GBL_DATA_SIZE)
 
 #define CONFIG_TEGRA_GPIO
-#define CONFIG_CMD_GPIO
 #define CONFIG_CMD_ENTERRCM
 
 /* Defines for SPL */
@@ -144,7 +128,6 @@
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_GPIO_SUPPORT
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_LATE_INIT
 
@@ -154,6 +137,8 @@
 
 #ifndef CONFIG_SPL_BUILD
 #include <config_distro_defaults.h>
+#define CONFIG_CMD_EXT4_WRITE
+#define CONFIG_FAT_WRITE
 #endif
 
 #endif /* _TEGRA_COMMON_H_ */

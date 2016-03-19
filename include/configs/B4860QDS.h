@@ -7,7 +7,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 /*
@@ -460,13 +459,13 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_INIT_RAM_ADDR	0xfdd00000	/* Initial L1 address */
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS_HIGH	0xf
-#define CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW	0xfe0ec000
+#define CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW	0xfe03c000
 /* The assembler doesn't like typecast */
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS \
 	((CONFIG_SYS_INIT_RAM_ADDR_PHYS_HIGH * 1ull << 32) | \
 	  CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW)
 #else
-#define CONFIG_SYS_INIT_RAM_ADDR_PHYS	0xfe0ec000 /* Initial L1 address */
+#define CONFIG_SYS_INIT_RAM_ADDR_PHYS	0xfe03c000 /* Initial L1 address */
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS_HIGH 0
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW CONFIG_SYS_INIT_RAM_ADDR_PHYS
 #endif
@@ -484,7 +483,6 @@ unsigned long get_board_ddr_clk(void);
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(get_bus_freq(0)/2)
@@ -504,15 +502,6 @@ unsigned long get_board_ddr_clk(void);
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -588,8 +577,6 @@ unsigned long get_board_ddr_clk(void);
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH_SST
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         10000000
 #define CONFIG_SF_DEFAULT_MODE          0
@@ -718,7 +705,6 @@ unsigned long get_board_ddr_clk(void);
 #ifdef CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
-#define CONFIG_E1000
 
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
 #define CONFIG_DOS_PARTITION
@@ -757,7 +743,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_EEPROM
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_ERRATA
 #define CONFIG_CMD_GREPENV
 #define CONFIG_CMD_IRQ
@@ -929,9 +914,5 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_BOOTCOMMAND		CONFIG_LINUX
 
 #include <asm/fsl_secure_boot.h>
-
-#ifdef CONFIG_SECURE_BOOT
-#define CONFIG_CMD_BLOB
-#endif
 
 #endif	/* __CONFIG_H */

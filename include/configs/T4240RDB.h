@@ -12,7 +12,6 @@
 
 #define CONFIG_T4240RDB
 #define CONFIG_PHYS_64BIT
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define CONFIG_FSL_SATA_V2
@@ -179,7 +178,7 @@
 #define CONFIG_SYS_INIT_RAM_LOCK
 #define CONFIG_SYS_INIT_RAM_ADDR	0xfdd00000	/* Initial L1 address */
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS_HIGH	0xf
-#define CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW	0xfe0ec000
+#define CONFIG_SYS_INIT_RAM_ADDR_PHYS_LOW	0xfe03c000
 /* The assembler doesn't like typecast */
 #define CONFIG_SYS_INIT_RAM_ADDR_PHYS \
 	((CONFIG_SYS_INIT_RAM_ADDR_PHYS_HIGH * 1ull << 32) | \
@@ -198,7 +197,6 @@
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(get_bus_freq(0)/2)
@@ -214,15 +212,6 @@
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -278,7 +267,6 @@
 #ifdef CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
-#define CONFIG_E1000
 
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
 #define CONFIG_DOS_PARTITION
@@ -319,7 +307,6 @@
  * Command line configuration.
  */
 #define CONFIG_CMD_DHCP
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_ERRATA
 #define CONFIG_CMD_GREPENV
 #define CONFIG_CMD_IRQ
@@ -610,11 +597,19 @@ unsigned long get_board_ddr_clk(void);
 #define I2C_VOL_MONITOR_BUS_V_OVF	0x1
 #define I2C_VOL_MONITOR_BUS_V_SHIFT	3
 
+#define CONFIG_VID_FLS_ENV		"t4240rdb_vdd_mv"
+#ifndef CONFIG_SPL_BUILD
+#define CONFIG_VID
+#endif
+#define CONFIG_VOL_MONITOR_IR36021_SET
+#define CONFIG_VOL_MONITOR_IR36021_READ
+/* The lowest and highest voltage allowed for T4240RDB */
+#define VDD_MV_MIN			819
+#define VDD_MV_MAX			1212
+
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH_SST
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         10000000
 #define CONFIG_SF_DEFAULT_MODE          0
@@ -842,14 +837,5 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_BOOTCOMMAND		CONFIG_LINUX
 
 #include <asm/fsl_secure_boot.h>
-
-#ifdef CONFIG_SECURE_BOOT
-/* Secure Boot target was not getting build for T4240 because of
- * increased binary size. So the size is being reduced by removing USB
- * which is anyways not used in Secure Environment.
- */
-#undef CONFIG_CMD_USB
-#define CONFIG_CMD_BLOB
-#endif
 
 #endif	/* __CONFIG_H */

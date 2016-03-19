@@ -30,6 +30,7 @@ void save_omap_boot_params(void)
 {
 	u32 boot_params = *((u32 *)OMAP_SRAM_SCRATCH_BOOT_PARAMS);
 	struct omap_boot_parameters *omap_boot_params;
+	int sys_boot_device = 0;
 	u32 boot_device;
 	u32 boot_mode;
 
@@ -64,31 +65,42 @@ void save_omap_boot_params(void)
 	if (boot_device == BOOT_DEVICE_QSPI_4)
 		boot_device = BOOT_DEVICE_SPI;
 #endif
-#if (defined(BOOT_DEVICE_UART) && !defined(CONFIG_SPL_YMODEM_SUPPORT)) || \
-    (defined(BOOT_DEVICE_USB) && !defined(CONFIG_SPL_USB_SUPPORT)) || \
-    (defined(BOOT_DEVICE_USBETH) && !defined(CONFIG_SPL_USBETH_SUPPORT))
 	/*
 	 * When booting from peripheral booting, the boot device is not usable
 	 * as-is (unless there is support for it), so the boot device is instead
 	 * figured out using the SYS_BOOT pins.
 	 */
 	switch (boot_device) {
-#ifdef BOOT_DEVICE_UART
-	case BOOT_DEVICE_UART:
+#if defined(BOOT_DEVICE_UART) && !defined(CONFIG_SPL_YMODEM_SUPPORT)
+		case BOOT_DEVICE_UART:
+			sys_boot_device = 1;
+			break;
 #endif
-#ifdef BOOT_DEVICE_USB
-	case BOOT_DEVICE_USB:
+#if defined(BOOT_DEVICE_USB) && !defined(CONFIG_SPL_USB_SUPPORT)
+		case BOOT_DEVICE_USB:
+			sys_boot_device = 1;
+			break;
 #endif
+#if defined(BOOT_DEVICE_USBETH) && !defined(CONFIG_SPL_USBETH_SUPPORT)
+		case BOOT_DEVICE_USBETH:
+			sys_boot_device = 1;
+			break;
+#endif
+#if defined(BOOT_DEVICE_CPGMAC) && !defined(CONFIG_SPL_ETH_SUPPORT)
+		case BOOT_DEVICE_CPGMAC:
+			sys_boot_device = 1;
+			break;
+#endif
+	}
+
+	if (sys_boot_device) {
 		boot_device = omap_sys_boot_device();
 
 		/* MMC raw mode will fallback to FS mode. */
 		if ((boot_device >= MMC_BOOT_DEVICES_START) &&
 		    (boot_device <= MMC_BOOT_DEVICES_END))
 			boot_mode = MMCSD_MODE_RAW;
-
-		break;
 	}
-#endif
 
 	gd->arch.omap_boot_device = boot_device;
 
@@ -99,8 +111,6 @@ void save_omap_boot_params(void)
 	    (boot_device <= MMC_BOOT_DEVICES_END)) {
 		switch (boot_device) {
 		case BOOT_DEVICE_MMC1:
-			boot_mode = MMCSD_MODE_FS;
-			break;
 		case BOOT_DEVICE_MMC2:
 			boot_mode = MMCSD_MODE_RAW;
 			break;
@@ -196,6 +206,7 @@ int board_mmc_init(bd_t *bis)
 		break;
 	case BOOT_DEVICE_MMC2:
 	case BOOT_DEVICE_MMC2_2:
+		omap_mmc_init(0, 0, 0, -1, -1);
 		omap_mmc_init(1, 0, 0, -1, -1);
 		break;
 	}

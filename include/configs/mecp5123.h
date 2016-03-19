@@ -16,7 +16,6 @@
 
 #define CONFIG_MECP5123 1
 #define CONFIG_DISPLAY_BOARDINFO
-#define CONFIG_SYS_GENERIC_BOARD
 
 /*
  * Memory map for the MECP5123 board:
@@ -309,7 +308,6 @@
 #undef CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_JFFS2
-#define CONFIG_CMD_ELF
 #define CONFIG_DOS_PARTITION
 
 /*
@@ -428,9 +426,6 @@
 	""
 
 #define CONFIG_BOOTCOMMAND	"run flash_self"
-
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
 
 #define OF_CPU			"PowerPC,5121@0"
 #define OF_SOC_COMPAT		"fsl,mpc5121-immr"

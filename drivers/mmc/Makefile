@@ -8,6 +8,7 @@
 obj-$(CONFIG_DM_MMC) += mmc-uclass.o
 
 obj-$(CONFIG_ARM_PL180_MMCI) += arm_pl180_mmci.o
+obj-$(CONFIG_ATMEL_SDHCI) += atmel_sdhci.o
 obj-$(CONFIG_BCM2835_SDHCI) += bcm2835_sdhci.o
 obj-$(CONFIG_BFIN_SDH) += bfin_sdh.o
 obj-$(CONFIG_DAVINCI_MMC) += davinci_mmc.o
@@ -29,6 +30,7 @@ obj-$(CONFIG_MXS_MMC) += mxsmmc.o
 obj-$(CONFIG_OMAP_HSMMC) += omap_hsmmc.o
 obj-$(CONFIG_X86) += pci_mmc.o
 obj-$(CONFIG_PXA_MMC_GENERIC) += pxa_mmc_gen.o
+obj-$(CONFIG_ROCKCHIP_DWMMC) += rockchip_dw_mmc.o
 obj-$(CONFIG_SUPPORT_EMMC_RPMB) += rpmb.o
 obj-$(CONFIG_S3C_SDI) += s3c_sdi.o
 obj-$(CONFIG_S5P_SDHCI) += s5p_sdhci.o
@@ -39,6 +41,7 @@ obj-$(CONFIG_SH_SDHI) += sh_sdhi.o
 obj-$(CONFIG_SOCFPGA_DWMMC) += socfpga_dw_mmc.o
 obj-$(CONFIG_SPEAR_SDHCI) += spear_sdhci.o
 obj-$(CONFIG_TEGRA_MMC) += tegra_mmc.o
+obj-$(CONFIG_MMC_UNIPHIER) += uniphier-sd.o
 obj-$(CONFIG_ZYNQ_SDHCI) += zynq_sdhci.o
 
 ifdef CONFIG_SPL_BUILD
@@ -46,4 +49,4 @@ obj-$(CONFIG_SPL_MMC_BOOT) += fsl_esdhc_spl.o
 else
 obj-$(CONFIG_GENERIC_MMC) += mmc_write.o
 endif
-
+obj-$(CONFIG_PIC32_SDHCI) += pic32_sdhci.o

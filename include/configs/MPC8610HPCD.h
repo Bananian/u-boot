@@ -1,9 +1,7 @@
 /*
  * Copyright 2007-2011 Freescale Semiconductor, Inc.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * Version 2 as published by the Free Software Foundation.
+ * SPDX-License-Identifier:	GPL-2.0
  */
 
 /*
@@ -12,6 +10,8 @@
 
 #ifndef __CONFIG_H
 #define __CONFIG_H
+
+#define CONFIG_DISPLAY_BOARDINFO
 
 /* High Level Configuration Options */
 #define CONFIG_MPC8610		1	/* MPC8610 specific */
@@ -223,7 +223,6 @@
 
 /* Serial Port */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -236,14 +235,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree to kernel
- */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
-
 
 /* maximum size of the flat tree (8K) */
 #define OF_FLAT_TREE_MAX_SIZE	8192

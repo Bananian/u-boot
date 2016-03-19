@@ -41,7 +41,6 @@
 
 /* FIT support */
 #define CONFIG_SYS_BOOTM_LEN         SZ_64M
-#define CONFIG_OF_BOARD_SETUP
 
 /* UBI Support */
 #define CONFIG_CMD_MTDPARTS
@@ -213,7 +212,6 @@
 #define CONFIG_ENV_EEPROM_IS_ON_I2C
 #define CONFIG_SYS_I2C_EEPROM_ADDR	0x50	/* Main EEPROM */
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	2
-#define CONFIG_SYS_I2C_MULTI_EEPROMS
 
 /* PMIC support */
 #define CONFIG_POWER_TPS65910

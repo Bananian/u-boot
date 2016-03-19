@@ -102,8 +102,9 @@ struct usb_linux_config_descriptor {
 } __attribute__ ((packed));
 
 #if defined CONFIG_EHCI_DESC_BIG_ENDIAN
-#define	ehci_readl(x)		(*((volatile u32 *)(x)))
-#define ehci_writel(a, b)	(*((volatile u32 *)(a)) = ((volatile u32)b))
+#define ehci_readl(x)		cpu_to_be32((*((volatile u32 *)(x))))
+#define ehci_writel(a, b)	(*((volatile u32 *)(a)) = \
+					cpu_to_be32(((volatile u32)b)))
 #else
 #define ehci_readl(x)		cpu_to_le32((*((volatile u32 *)(x))))
 #define ehci_writel(a, b)	(*((volatile u32 *)(a)) = \
@@ -242,6 +243,7 @@ struct ehci_ops {
 };
 
 struct ehci_ctrl {
+	enum usb_init_type init;
 	struct ehci_hccr *hccr;	/* R/O registers, not need for volatile */
 	struct ehci_hcor *hcor;
 	int rootdev;

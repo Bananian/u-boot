@@ -23,10 +23,6 @@
 /* SF Configs */
 #define CONFIG_CMD_SF
 #define CONFIG_SPI
-#define CONFIG_SPI_FLASH_STMICRO
-#define CONFIG_SPI_FLASH_WINBOND
-#define CONFIG_SPI_FLASH_MACRONIX
-#define CONFIG_SPI_FLASH_SST
 #define CONFIG_MXC_SPI
 #define CONFIG_SF_DEFAULT_BUS  2
 #define CONFIG_SF_DEFAULT_CS   0
@@ -44,6 +40,8 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_SYS_I2C_SPEED            100000
 
@@ -113,7 +111,6 @@
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN        1
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS     3
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 5
-#define CONFIG_SYS_I2C_MULTI_EEPROMS
 #endif
 
 /* Miscellaneous commands */

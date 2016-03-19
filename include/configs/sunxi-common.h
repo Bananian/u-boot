@@ -13,6 +13,7 @@
 #ifndef _SUNXI_COMMON_CONFIG_H
 #define _SUNXI_COMMON_CONFIG_H
 
+#include <asm/arch/cpu.h>
 #include <linux/stringify.h>
 
 #ifdef CONFIG_OLD_SUNXI_KERNEL_COMPAT
@@ -39,19 +40,7 @@
 #define CONFIG_SYS_THUMB_BUILD	/* Thumbs mode to save space in SPL */
 #endif
 
-#include <asm/arch/cpu.h>	/* get chip and board defs */
-
-#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_DM_SERIAL)
-# define CONFIG_DW_SERIAL
-#endif
-
-/*
- * Display CPU information
- */
-#define CONFIG_DISPLAY_CPUINFO
-
 /* Serial & console */
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 /* ns16550 reg in the low bits of cpu reg */
 #define CONFIG_SYS_NS16550_CLK		24000000
@@ -65,6 +54,7 @@
 #endif
 
 /* CPU */
+#define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_SYS_CACHELINE_SIZE	64
 
 /*
@@ -80,7 +70,10 @@
 #define CONFIG_SYS_LOAD_ADDR		0x22000000 /* default load address */
 #define CONFIG_SYS_TEXT_BASE		0x2a000000
 #define CONFIG_PRE_CON_BUF_ADDR		0x2f000000
-#define CONFIG_SYS_SPL_MALLOC_START	0x2ff00000
+/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here 
+ * since it needs to fit in with the other values. By also #defining it
+ * we get warnings if the Kconfig value mismatches. */
+#define CONFIG_SPL_STACK_R_ADDR		0x2fe00000
 #define CONFIG_SPL_BSS_START_ADDR	0x2ff80000
 #else
 #define SDRAM_OFFSET(x) 0x4##x
@@ -88,12 +81,14 @@
 #define CONFIG_SYS_LOAD_ADDR		0x42000000 /* default load address */
 #define CONFIG_SYS_TEXT_BASE		0x4a000000
 #define CONFIG_PRE_CON_BUF_ADDR		0x4f000000
-#define CONFIG_SYS_SPL_MALLOC_START	0x4ff00000
+/* Note SPL_STACK_R_ADDR is set through Kconfig, we include it here 
+ * since it needs to fit in with the other values. By also #defining it
+ * we get warnings if the Kconfig value mismatches. */
+#define CONFIG_SPL_STACK_R_ADDR		0x4fe00000
 #define CONFIG_SPL_BSS_START_ADDR	0x4ff80000
 #endif
 
 #define CONFIG_SPL_BSS_MAX_SIZE		0x00080000 /* 512 KiB */
-#define CONFIG_SYS_SPL_MALLOC_SIZE	0x00080000 /* 512 KiB */
 
 #ifdef CONFIG_MACH_SUN9I
 /*
@@ -137,19 +132,12 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_SERIAL_TAG
 
-#if defined(CONFIG_SPL_NAND_SUNXI)
-#define CONFIG_SPL_NAND_DRIVERS
-#define CONFIG_SPL_NAND_SUPPORT
-
-#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS 0x280000
-#define CONFIG_SYS_NAND_U_BOOT_OFFS 0x008000
-
+#ifdef CONFIG_NAND_SUNXI
+#define CONFIG_SPL_NAND_SUPPORT 1
 #endif
 
-
 /* mmc config */
-#if !defined(CONFIG_UART0_PORT_F)
-#define CONFIG_MMC
+#ifdef CONFIG_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_CMD_MMC
 #define CONFIG_MMC_SUNXI
@@ -158,8 +146,8 @@
 #define CONFIG_SYS_MMC_ENV_DEV		0	/* first detected MMC controller */
 #endif
 
-/* 4MB of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (4 << 20))
+/* 64MB of malloc() pool */
+#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (64 << 20))
 
 /*
  * Miscellaneous configurable options
@@ -167,7 +155,6 @@
 #define CONFIG_SYS_CBSIZE	1024	/* Console I/O Buffer Size */
 #define CONFIG_SYS_PBSIZE	1024	/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS	16	/* max number of command args */
-#define CONFIG_SYS_GENERIC_BOARD
 
 /* Boot Argument Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
@@ -185,8 +172,9 @@
 
 #define CONFIG_SYS_NO_FLASH
 
-#define CONFIG_SYS_MONITOR_LEN		(512 << 10)	/* 512 KiB */
+#define CONFIG_SYS_MONITOR_LEN		(768 << 10)	/* 768 KiB */
 #define CONFIG_IDENT_STRING		" Allwinner Technology"
+#define CONFIG_DISPLAY_BOARDINFO
 
 #define CONFIG_ENV_OFFSET		(544 << 10) /* (8 + 24 + 512) KiB */
 #define CONFIG_ENV_SIZE			(128 << 10)	/* 128 KiB */
@@ -205,7 +193,7 @@
 
 #define CONFIG_SPL_LIBDISK_SUPPORT
 
-#if !defined(CONFIG_UART0_PORT_F)
+#ifdef CONFIG_MMC
 #define CONFIG_SPL_MMC_SUPPORT
 #endif
 
@@ -219,13 +207,14 @@
 #define CONFIG_SPL_STACK		LOW_LEVEL_SRAM_STACK
 
 /* I2C */
-#if defined CONFIG_AXP152_POWER || defined CONFIG_AXP209_POWER
+#if defined CONFIG_AXP152_POWER || defined CONFIG_AXP209_POWER || \
+    defined CONFIG_SY8106A_POWER
 #define CONFIG_SPL_I2C_SUPPORT
 #endif
 
 #if defined CONFIG_I2C0_ENABLE || defined CONFIG_I2C1_ENABLE || \
     defined CONFIG_I2C2_ENABLE || defined CONFIG_I2C3_ENABLE || \
-    defined CONFIG_I2C4_ENABLE
+    defined CONFIG_I2C4_ENABLE || defined CONFIG_R_I2C_ENABLE
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MVTWSI
 #define CONFIG_SYS_I2C_SPEED		400000
@@ -252,7 +241,9 @@ extern int soft_i2c_gpio_scl;
 #endif
 
 /* PMU */
-#if defined CONFIG_AXP152_POWER || defined CONFIG_AXP209_POWER || defined CONFIG_AXP221_POWER
+#if defined CONFIG_AXP152_POWER || defined CONFIG_AXP209_POWER || \
+    defined CONFIG_AXP221_POWER || defined CONFIG_AXP818_POWER || \
+    defined CONFIG_SY8106A_POWER
 #define CONFIG_SPL_POWER_SUPPORT
 #endif
 
@@ -281,18 +272,13 @@ extern int soft_i2c_gpio_scl;
 /* GPIO */
 #define CONFIG_SUNXI_GPIO
 #define CONFIG_SPL_GPIO_SUPPORT
-#define CONFIG_CMD_GPIO
 
 #ifdef CONFIG_VIDEO
 /*
  * The amount of RAM to keep free at the top of RAM when relocating u-boot,
  * to use as framebuffer. This must be a multiple of 4096.
  */
-#ifdef CONFIG_VIDEO_LCD_PANEL_EDP_4_LANE_1620M_VIA_ANX9804
-#define CONFIG_SUNXI_MAX_FB_SIZE (12 << 20)
-#else
-#define CONFIG_SUNXI_MAX_FB_SIZE (9 << 20)
-#endif
+#define CONFIG_SUNXI_MAX_FB_SIZE (16 << 20)
 
 /* Do we want to initialize a simple FB? */
 #define CONFIG_VIDEO_DT_SIMPLEFB
@@ -311,11 +297,6 @@ extern int soft_i2c_gpio_scl;
 /* stop x86 thinking in cfbconsole from trying to init a pc keyboard */
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 
-/* To be able to hook simplefb into dt */
-#ifdef CONFIG_VIDEO_DT_SIMPLEFB
-#define CONFIG_OF_BOARD_SETUP
-#endif
-
 #endif /* CONFIG_VIDEO */
 
 /* Ethernet support */
@@ -326,11 +307,9 @@ extern int soft_i2c_gpio_scl;
 #endif
 
 #ifdef CONFIG_SUNXI_GMAC
-#define CONFIG_DW_AUTONEG
 #define CONFIG_PHY_GIGE			/* GMAC can use gigabit PHY	*/
 #define CONFIG_PHY_ADDR		1
 #define CONFIG_MII			/* MII PHY management		*/
-#define CONFIG_PHYLIB
 #endif
 
 #ifdef CONFIG_USB_EHCI_HCD
@@ -350,6 +329,7 @@ extern int soft_i2c_gpio_scl;
 #define CONFIG_USB_GADGET_VBUS_DRAW	0
 
 #define CONFIG_USB_GADGET_DOWNLOAD
+#define CONFIG_USB_FUNCTION_DFU
 #define CONFIG_USB_FUNCTION_FASTBOOT
 #define CONFIG_USB_FUNCTION_MASS_STORAGE
 #endif
@@ -360,14 +340,23 @@ extern int soft_i2c_gpio_scl;
 #define CONFIG_G_DNL_MANUFACTURER	"Allwinner Technology"
 #endif
 
+#ifdef CONFIG_USB_FUNCTION_DFU
+#define CONFIG_CMD_DFU
+#define CONFIG_DFU_RAM
+#endif
+
 #ifdef CONFIG_USB_FUNCTION_FASTBOOT
 #define CONFIG_CMD_FASTBOOT
 #define CONFIG_FASTBOOT_BUF_ADDR	CONFIG_SYS_LOAD_ADDR
 #define CONFIG_FASTBOOT_BUF_SIZE	0x2000000
+#define CONFIG_ANDROID_BOOT_IMAGE
 
 #define CONFIG_FASTBOOT_FLASH
+
+#ifdef CONFIG_MMC
 #define CONFIG_FASTBOOT_FLASH_MMC_DEV	0
 #define CONFIG_EFI_PARTITION
+#endif
 #endif
 
 #ifdef CONFIG_USB_FUNCTION_MASS_STORAGE
@@ -399,22 +388,41 @@ extern int soft_i2c_gpio_scl;
 #define CONFIG_PRE_CON_BUF_SZ		4096 /* Aprox 2 80*25 screens */
 
 /*
- * 240M RAM (256M minimum minus space for the framebuffer),
+ * 160M RAM (256M minimum minus 64MB heap + 32MB for u-boot, stack, fb, etc.
  * 32M uncompressed kernel, 16M compressed kernel, 1M fdt,
  * 1M script, 1M pxe and the ramdisk at the end.
  */
+
+#define KERNEL_ADDR_R  __stringify(SDRAM_OFFSET(2000000))
+#define FDT_ADDR_R     __stringify(SDRAM_OFFSET(3000000))
+#define SCRIPT_ADDR_R  __stringify(SDRAM_OFFSET(3100000))
+#define PXEFILE_ADDR_R __stringify(SDRAM_OFFSET(3200000))
+#define RAMDISK_ADDR_R __stringify(SDRAM_OFFSET(3300000))
+
 #define MEM_LAYOUT_ENV_SETTINGS \
-	"bootm_size=0xf000000\0" \
-	"kernel_addr_r=" __stringify(SDRAM_OFFSET(2000000)) "\0" \
-	"fdt_addr_r=" __stringify(SDRAM_OFFSET(3000000)) "\0" \
-	"scriptaddr=" __stringify(SDRAM_OFFSET(3100000)) "\0" \
-	"pxefile_addr_r=" __stringify(SDRAM_OFFSET(3200000)) "\0" \
-	"ramdisk_addr_r=" __stringify(SDRAM_OFFSET(3300000)) "\0"
+	"bootm_size=0xa000000\0" \
+	"kernel_addr_r=" KERNEL_ADDR_R "\0" \
+	"fdt_addr_r=" FDT_ADDR_R "\0" \
+	"scriptaddr=" SCRIPT_ADDR_R "\0" \
+	"pxefile_addr_r=" PXEFILE_ADDR_R "\0" \
+	"ramdisk_addr_r=" RAMDISK_ADDR_R "\0"
+
+#define DFU_ALT_INFO_RAM \
+	"dfu_alt_info_ram=" \
+	"kernel ram " KERNEL_ADDR_R " 0x1000000;" \
+	"fdt ram " FDT_ADDR_R " 0x100000;" \
+	"ramdisk ram " RAMDISK_ADDR_R " 0x4000000\0"
 
 #ifdef CONFIG_MMC
 #define BOOT_TARGET_DEVICES_MMC(func) func(MMC, mmc, 0)
+#if CONFIG_MMC_SUNXI_SLOT_EXTRA != -1
+#define BOOT_TARGET_DEVICES_MMC_EXTRA(func) func(MMC, mmc, 1)
+#else
+#define BOOT_TARGET_DEVICES_MMC_EXTRA(func)
+#endif
 #else
 #define BOOT_TARGET_DEVICES_MMC(func)
+#define BOOT_TARGET_DEVICES_MMC_EXTRA(func)
 #endif
 
 #ifdef CONFIG_AHCI
@@ -429,12 +437,40 @@ extern int soft_i2c_gpio_scl;
 #define BOOT_TARGET_DEVICES_USB(func)
 #endif
 
+/* FEL boot support, auto-execute boot.scr if a script address was provided */
+#define BOOTENV_DEV_FEL(devtypeu, devtypel, instance) \
+	"bootcmd_fel=" \
+		"if test -n ${fel_booted} && test -n ${fel_scriptaddr}; then " \
+			"echo '(FEL boot)'; " \
+			"source ${fel_scriptaddr}; " \
+		"fi\0"
+#define BOOTENV_DEV_NAME_FEL(devtypeu, devtypel, instance) \
+	"fel "
+
 #define BOOT_TARGET_DEVICES(func) \
+	func(FEL, fel, na) \
 	BOOT_TARGET_DEVICES_MMC(func) \
+	BOOT_TARGET_DEVICES_MMC_EXTRA(func) \
 	BOOT_TARGET_DEVICES_SCSI(func) \
 	BOOT_TARGET_DEVICES_USB(func) \
 	func(PXE, pxe, na) \
 	func(DHCP, dhcp, na)
+
+#ifdef CONFIG_OLD_SUNXI_KERNEL_COMPAT
+#define BOOTCMD_SUNXI_COMPAT \
+	"bootcmd_sunxi_compat=" \
+		"setenv root /dev/mmcblk0p3 rootwait; " \
+		"if ext2load mmc 0 0x44000000 uEnv.txt; then " \
+			"echo Loaded environment from uEnv.txt; " \
+			"env import -t 0x44000000 ${filesize}; " \
+		"fi; " \
+		"setenv bootargs console=${console} root=${root} ${extraargs}; " \
+		"ext2load mmc 0 0x43000000 script.bin && " \
+		"ext2load mmc 0 0x48000000 uImage && " \
+		"bootm 0x48000000\0"
+#else
+#define BOOTCMD_SUNXI_COMPAT
+#endif
 
 #include <config_distro_bootcmd.h>
 
@@ -464,8 +500,10 @@ extern int soft_i2c_gpio_scl;
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONSOLE_ENV_SETTINGS \
 	MEM_LAYOUT_ENV_SETTINGS \
+	DFU_ALT_INFO_RAM \
 	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
 	"console=ttyS0,115200\0" \
+	BOOTCMD_SUNXI_COMPAT \
 	BOOTENV
 
 #else /* ifndef CONFIG_SPL_BUILD */

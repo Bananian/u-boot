@@ -13,7 +13,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 
 /*
  * Top level Makefile configuration choices
@@ -407,7 +406,6 @@
 
 /* Serial Port */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(400000000 / CONFIG_SYS_CLK_DIV)
@@ -420,11 +418,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT		1
-#define CONFIG_OF_BOARD_SETUP		1
-#define CONFIG_OF_STDOUT_VIA_ALIAS	1
 
 /*
  * I2C
@@ -539,7 +532,6 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_REGINFO
 
 #if defined(CONFIG_PCI)

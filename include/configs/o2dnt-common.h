@@ -18,7 +18,6 @@
  */
 #define CONFIG_MPC5200
 #define CONFIG_DISPLAY_BOARDINFO
-#define CONFIG_SYS_GENERIC_BOARD
 
 #define CONFIG_SYS_MPC5XXX_CLKIN	33000000 /* running at 33.000000MHz */
 
@@ -333,9 +332,6 @@
 /*
  * DT support
  */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 4)

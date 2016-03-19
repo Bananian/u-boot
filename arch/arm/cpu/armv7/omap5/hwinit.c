@@ -367,6 +367,9 @@ void init_omap_revision(void)
 	case DRA752_CONTROL_ID_CODE_ES1_1:
 		*omap_si_rev = DRA752_ES1_1;
 		break;
+	case DRA752_CONTROL_ID_CODE_ES2_0:
+		*omap_si_rev = DRA752_ES2_0;
+		break;
 	case DRA722_CONTROL_ID_CODE_ES1_0:
 		*omap_si_rev = DRA722_ES1_0;
 		break;
@@ -374,6 +377,14 @@ void init_omap_revision(void)
 		*omap_si_rev = OMAP5430_SILICON_ID_INVALID;
 	}
 	init_cpu_configuration();
+}
+
+void omap_die_id(unsigned int *die_id)
+{
+	die_id[0] = readl((*ctrl)->control_std_fuse_die_id_0);
+	die_id[1] = readl((*ctrl)->control_std_fuse_die_id_1);
+	die_id[2] = readl((*ctrl)->control_std_fuse_die_id_2);
+	die_id[3] = readl((*ctrl)->control_std_fuse_die_id_3);
 }
 
 void reset_cpu(ulong ignored)

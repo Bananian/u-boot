@@ -13,7 +13,6 @@
 
 #define CONFIG_P2041RDB
 #define CONFIG_PHYS_64BIT
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 #define CONFIG_PPC_P2041
 
@@ -325,7 +324,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
  * shorted - index 1
  */
 #define CONFIG_CONS_INDEX	1
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		(get_bus_freq(0)/2)
@@ -340,15 +338,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -411,8 +400,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 /*
  * eSPI - Enhanced SPI
  */
-#define CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH_SPANSION
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         10000000
 #define CONFIG_SF_DEFAULT_MODE          0
@@ -562,7 +549,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 #ifdef CONFIG_PCI
 #define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
-#define CONFIG_E1000
 
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
 #define CONFIG_DOS_PARTITION
@@ -619,7 +605,6 @@ unsigned long get_board_sys_clk(unsigned long dummy);
  * Command line configuration.
  */
 #define CONFIG_CMD_DHCP
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_ERRATA
 #define CONFIG_CMD_GREPENV
 #define CONFIG_CMD_IRQ
@@ -761,9 +746,5 @@ unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_BOOTCOMMAND		CONFIG_HDBOOT
 
 #include <asm/fsl_secure_boot.h>
-
-#ifdef CONFIG_SECURE_BOOT
-#define CONFIG_CMD_BLOB
-#endif
 
 #endif	/* __CONFIG_H */

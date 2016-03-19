@@ -13,11 +13,13 @@
 #include <common.h>
 #include <palmas.h>
 #include <sata.h>
+#include <linux/string.h>
 #include <asm/gpio.h>
 #include <usb.h>
 #include <linux/usb/gadget.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/dra7xx_iodelay.h>
+#include <asm/emif.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/arch/mmc_host_def.h>
 #include <asm/arch/sata.h>
@@ -27,6 +29,13 @@
 #include <ti-usb-phy-uboot.h>
 
 #include "mux_data.h"
+#include "../common/board_detect.h"
+
+#define board_is_dra74x_evm()		board_ti_is("5777xCPU")
+#define board_is_dra74x_revh_or_later() board_is_dra74x_evm() &&	\
+				(strncmp("H", board_ti_get_rev(), 1) <= 0)
+#define board_ti_get_emif_size()	board_ti_get_emif1_size() +	\
+					board_ti_get_emif2_size()
 
 #ifdef CONFIG_DRIVER_TI_CPSW
 #include <cpsw.h>
@@ -37,9 +46,214 @@ DECLARE_GLOBAL_DATA_PTR;
 /* GPIO 7_11 */
 #define GPIO_DDR_VTT_EN 203
 
+#define SYSINFO_BOARD_NAME_MAX_LEN	37
+
 const struct omap_sysinfo sysinfo = {
-	"Board: DRA7xx\n"
+	"Board: UNKNOWN(DRA7 EVM) REV UNKNOWN\n"
 };
+
+static const struct emif_regs emif1_ddr3_532_mhz_1cs = {
+	.sdram_config_init              = 0x61851ab2,
+	.sdram_config                   = 0x61851ab2,
+	.sdram_config2			= 0x08000000,
+	.ref_ctrl                       = 0x000040F1,
+	.ref_ctrl_final			= 0x00001035,
+	.sdram_tim1                     = 0xCCCF36B3,
+	.sdram_tim2                     = 0x308F7FDA,
+	.sdram_tim3                     = 0x427F88A8,
+	.read_idle_ctrl                 = 0x00050000,
+	.zq_config                      = 0x0007190B,
+	.temp_alert_config              = 0x00000000,
+	.emif_ddr_phy_ctlr_1_init       = 0x0024400B,
+	.emif_ddr_phy_ctlr_1            = 0x0E24400B,
+	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
+	.emif_ddr_ext_phy_ctrl_2        = 0x00910091,
+	.emif_ddr_ext_phy_ctrl_3        = 0x00950095,
+	.emif_ddr_ext_phy_ctrl_4        = 0x009B009B,
+	.emif_ddr_ext_phy_ctrl_5        = 0x009E009E,
+	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
+	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
+	.emif_rd_wr_lvl_ctl             = 0x00000000,
+	.emif_rd_wr_exec_thresh         = 0x00000305
+};
+
+static const struct emif_regs emif2_ddr3_532_mhz_1cs = {
+	.sdram_config_init              = 0x61851B32,
+	.sdram_config                   = 0x61851B32,
+	.sdram_config2			= 0x08000000,
+	.ref_ctrl                       = 0x000040F1,
+	.ref_ctrl_final			= 0x00001035,
+	.sdram_tim1                     = 0xCCCF36B3,
+	.sdram_tim2                     = 0x308F7FDA,
+	.sdram_tim3                     = 0x427F88A8,
+	.read_idle_ctrl                 = 0x00050000,
+	.zq_config                      = 0x0007190B,
+	.temp_alert_config              = 0x00000000,
+	.emif_ddr_phy_ctlr_1_init       = 0x0024400B,
+	.emif_ddr_phy_ctlr_1            = 0x0E24400B,
+	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
+	.emif_ddr_ext_phy_ctrl_2        = 0x00910091,
+	.emif_ddr_ext_phy_ctrl_3        = 0x00950095,
+	.emif_ddr_ext_phy_ctrl_4        = 0x009B009B,
+	.emif_ddr_ext_phy_ctrl_5        = 0x009E009E,
+	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
+	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
+	.emif_rd_wr_lvl_ctl             = 0x00000000,
+	.emif_rd_wr_exec_thresh         = 0x00000305
+};
+
+static const struct emif_regs emif_1_regs_ddr3_666_mhz_1cs_dra_es1 = {
+	.sdram_config_init              = 0x61862B32,
+	.sdram_config                   = 0x61862B32,
+	.sdram_config2			= 0x08000000,
+	.ref_ctrl                       = 0x0000514C,
+	.ref_ctrl_final			= 0x0000144A,
+	.sdram_tim1                     = 0xD113781C,
+	.sdram_tim2                     = 0x30717FE3,
+	.sdram_tim3                     = 0x409F86A8,
+	.read_idle_ctrl                 = 0x00050000,
+	.zq_config                      = 0x5007190B,
+	.temp_alert_config              = 0x00000000,
+	.emif_ddr_phy_ctlr_1_init       = 0x0024400D,
+	.emif_ddr_phy_ctlr_1            = 0x0E24400D,
+	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
+	.emif_ddr_ext_phy_ctrl_2        = 0x00A400A4,
+	.emif_ddr_ext_phy_ctrl_3        = 0x00A900A9,
+	.emif_ddr_ext_phy_ctrl_4        = 0x00B000B0,
+	.emif_ddr_ext_phy_ctrl_5        = 0x00B000B0,
+	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
+	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
+	.emif_rd_wr_lvl_ctl             = 0x00000000,
+	.emif_rd_wr_exec_thresh         = 0x00000305
+};
+
+const struct emif_regs emif1_ddr3_532_mhz_1cs_2G = {
+	.sdram_config_init              = 0x61851ab2,
+	.sdram_config                   = 0x61851ab2,
+	.sdram_config2			= 0x08000000,
+	.ref_ctrl                       = 0x000040F1,
+	.ref_ctrl_final			= 0x00001035,
+	.sdram_tim1                     = 0xCCCF36B3,
+	.sdram_tim2                     = 0x30BF7FDA,
+	.sdram_tim3                     = 0x427F8BA8,
+	.read_idle_ctrl                 = 0x00050000,
+	.zq_config                      = 0x0007190B,
+	.temp_alert_config              = 0x00000000,
+	.emif_ddr_phy_ctlr_1_init       = 0x0024400B,
+	.emif_ddr_phy_ctlr_1            = 0x0E24400B,
+	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
+	.emif_ddr_ext_phy_ctrl_2        = 0x00910091,
+	.emif_ddr_ext_phy_ctrl_3        = 0x00950095,
+	.emif_ddr_ext_phy_ctrl_4        = 0x009B009B,
+	.emif_ddr_ext_phy_ctrl_5        = 0x009E009E,
+	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
+	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
+	.emif_rd_wr_lvl_ctl             = 0x00000000,
+	.emif_rd_wr_exec_thresh         = 0x00000305
+};
+
+const struct emif_regs emif2_ddr3_532_mhz_1cs_2G = {
+	.sdram_config_init              = 0x61851B32,
+	.sdram_config                   = 0x61851B32,
+	.sdram_config2			= 0x08000000,
+	.ref_ctrl                       = 0x000040F1,
+	.ref_ctrl_final			= 0x00001035,
+	.sdram_tim1                     = 0xCCCF36B3,
+	.sdram_tim2                     = 0x308F7FDA,
+	.sdram_tim3                     = 0x427F88A8,
+	.read_idle_ctrl                 = 0x00050000,
+	.zq_config                      = 0x0007190B,
+	.temp_alert_config              = 0x00000000,
+	.emif_ddr_phy_ctlr_1_init       = 0x0024400B,
+	.emif_ddr_phy_ctlr_1            = 0x0E24400B,
+	.emif_ddr_ext_phy_ctrl_1        = 0x10040100,
+	.emif_ddr_ext_phy_ctrl_2        = 0x00910091,
+	.emif_ddr_ext_phy_ctrl_3        = 0x00950095,
+	.emif_ddr_ext_phy_ctrl_4        = 0x009B009B,
+	.emif_ddr_ext_phy_ctrl_5        = 0x009E009E,
+	.emif_rd_wr_lvl_rmp_win         = 0x00000000,
+	.emif_rd_wr_lvl_rmp_ctl         = 0x80000000,
+	.emif_rd_wr_lvl_ctl             = 0x00000000,
+	.emif_rd_wr_exec_thresh         = 0x00000305
+};
+
+void emif_get_reg_dump(u32 emif_nr, const struct emif_regs **regs)
+{
+	u64 ram_size;
+
+	ram_size = board_ti_get_emif_size();
+
+	switch (omap_revision()) {
+	case DRA752_ES1_0:
+	case DRA752_ES1_1:
+	case DRA752_ES2_0:
+		switch (emif_nr) {
+		case 1:
+			if (ram_size > CONFIG_MAX_MEM_MAPPED)
+				*regs = &emif1_ddr3_532_mhz_1cs_2G;
+			else
+				*regs = &emif1_ddr3_532_mhz_1cs;
+			break;
+		case 2:
+			if (ram_size > CONFIG_MAX_MEM_MAPPED)
+				*regs = &emif2_ddr3_532_mhz_1cs_2G;
+			else
+				*regs = &emif2_ddr3_532_mhz_1cs;
+			break;
+		}
+		break;
+	case DRA722_ES1_0:
+		*regs = &emif_1_regs_ddr3_666_mhz_1cs_dra_es1;
+		break;
+	default:
+		*regs = &emif1_ddr3_532_mhz_1cs;
+	}
+}
+
+static const struct dmm_lisa_map_regs lisa_map_dra7_1536MB = {
+	.dmm_lisa_map_0 = 0x0,
+	.dmm_lisa_map_1 = 0x80640300,
+	.dmm_lisa_map_2 = 0xC0500220,
+	.dmm_lisa_map_3 = 0xFF020100,
+	.is_ma_present	= 0x1
+};
+
+static const struct dmm_lisa_map_regs lisa_map_2G_x_2 = {
+	.dmm_lisa_map_0 = 0x0,
+	.dmm_lisa_map_1 = 0x0,
+	.dmm_lisa_map_2 = 0x80600100,
+	.dmm_lisa_map_3 = 0xFF020100,
+	.is_ma_present	= 0x1
+};
+
+const struct dmm_lisa_map_regs lisa_map_dra7_2GB = {
+	.dmm_lisa_map_0 = 0x0,
+	.dmm_lisa_map_1 = 0x0,
+	.dmm_lisa_map_2 = 0x80740300,
+	.dmm_lisa_map_3 = 0xFF020100,
+	.is_ma_present	= 0x1
+};
+
+void emif_get_dmm_regs(const struct dmm_lisa_map_regs **dmm_lisa_regs)
+{
+	u64 ram_size;
+
+	ram_size = board_ti_get_emif_size();
+
+	switch (omap_revision()) {
+	case DRA752_ES1_0:
+	case DRA752_ES1_1:
+	case DRA752_ES2_0:
+		if (ram_size > CONFIG_MAX_MEM_MAPPED)
+			*dmm_lisa_regs = &lisa_map_dra7_2GB;
+		else
+			*dmm_lisa_regs = &lisa_map_dra7_1536MB;
+		break;
+	case DRA722_ES1_0:
+	default:
+		*dmm_lisa_regs = &lisa_map_2G_x_2;
+	}
+}
 
 /**
  * @brief board_init
@@ -54,24 +268,77 @@ int board_init(void)
 	return 0;
 }
 
+void dram_init_banksize(void)
+{
+	u64 ram_size;
+
+	ram_size = board_ti_get_emif_size();
+
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size = get_effective_memsize();
+	if (ram_size > CONFIG_MAX_MEM_MAPPED) {
+		gd->bd->bi_dram[1].start = 0x200000000;
+		gd->bd->bi_dram[1].size = ram_size - CONFIG_MAX_MEM_MAPPED;
+	}
+}
+
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	u32 id[4];
+	char *name = "unknown";
 
-	if (omap_revision() == DRA722_ES1_0)
-		setenv("board_name", "dra72x");
+	if (is_dra72x())
+		name = "dra72x";
 	else
-		setenv("board_name", "dra7xx");
+		name = "dra7xx";
 
-	id[0] = readl((*ctrl)->control_std_fuse_die_id_0);
-	id[1] = readl((*ctrl)->control_std_fuse_die_id_1);
-	usb_set_serial_num_from_die_id(id);
+	set_board_info_env(name);
+
+	omap_die_id_serial();
 #endif
 	return 0;
 }
 
-void set_muxconf_regs_essential(void)
+#ifdef CONFIG_SPL_BUILD
+void do_board_detect(void)
+{
+	int rc;
+
+	rc = ti_i2c_eeprom_dra7_get(CONFIG_EEPROM_BUS_ADDRESS,
+				    CONFIG_EEPROM_CHIP_ADDRESS);
+	if (rc)
+		printf("ti_i2c_eeprom_init failed %d\n", rc);
+}
+
+#else
+
+void do_board_detect(void)
+{
+	char *bname = NULL;
+	int rc;
+
+	rc = ti_i2c_eeprom_dra7_get(CONFIG_EEPROM_BUS_ADDRESS,
+				    CONFIG_EEPROM_CHIP_ADDRESS);
+	if (rc)
+		printf("ti_i2c_eeprom_init failed %d\n", rc);
+
+	if (board_is_dra74x_evm()) {
+		bname = "DRA74x EVM";
+	/* If EEPROM is not populated */
+	} else {
+		if (is_dra72x())
+			bname = "DRA72x EVM";
+		else
+			bname = "DRA74x EVM";
+	}
+
+	if (bname)
+		snprintf(sysinfo.board_string, SYSINFO_BOARD_NAME_MAX_LEN,
+			 "Board: %s REV %s\n", bname, board_ti_get_rev());
+}
+#endif	/* CONFIG_SPL_BUILD */
+
+void set_muxconf_regs(void)
 {
 	do_set_mux32((*ctrl)->control_padconf_core_base,
 		     early_padconf, ARRAY_SIZE(early_padconf));
@@ -80,17 +347,36 @@ void set_muxconf_regs_essential(void)
 #ifdef CONFIG_IODELAY_RECALIBRATION
 void recalibrate_iodelay(void)
 {
-	if (is_dra72x()) {
-		__recalibrate_iodelay(core_padconf_array_essential,
-				      ARRAY_SIZE(core_padconf_array_essential),
-				      iodelay_cfg_array,
-				      ARRAY_SIZE(iodelay_cfg_array));
-	} else {
-		__recalibrate_iodelay(dra74x_core_padconf_array,
-				      ARRAY_SIZE(dra74x_core_padconf_array),
-				      dra742_iodelay_cfg_array,
-				      ARRAY_SIZE(dra742_iodelay_cfg_array));
+	struct pad_conf_entry const *pads;
+	struct iodelay_cfg_entry const *iodelay;
+	int npads, niodelays;
+
+	switch (omap_revision()) {
+	case DRA722_ES1_0:
+		pads = dra72x_core_padconf_array;
+		npads = ARRAY_SIZE(dra72x_core_padconf_array);
+		iodelay = dra72_iodelay_cfg_array;
+		niodelays = ARRAY_SIZE(dra72_iodelay_cfg_array);
+		break;
+	case DRA752_ES1_0:
+	case DRA752_ES1_1:
+		pads = dra74x_core_padconf_array;
+		npads = ARRAY_SIZE(dra74x_core_padconf_array);
+		iodelay = dra742_es1_1_iodelay_cfg_array;
+		niodelays = ARRAY_SIZE(dra742_es1_1_iodelay_cfg_array);
+		break;
+	default:
+	case DRA752_ES2_0:
+		pads = dra74x_core_padconf_array;
+		npads = ARRAY_SIZE(dra74x_core_padconf_array);
+		iodelay = dra742_es2_0_iodelay_cfg_array;
+		niodelays = ARRAY_SIZE(dra742_es2_0_iodelay_cfg_array);
+		/* Setup port1 and port2 for rgmii with 'no-id' mode */
+		clrset_spare_register(1, 0, RGMII2_ID_MODE_N_MASK |
+				      RGMII1_ID_MODE_N_MASK);
+		break;
 	}
+	__recalibrate_iodelay(pads, npads, iodelay, niodelays);
 }
 #endif
 
@@ -114,7 +400,6 @@ static struct dwc3_device usb_otg_ss1 = {
 static struct dwc3_omap_device usb_otg_ss1_glue = {
 	.base = (void *)DRA7_USB_OTG_SS1_GLUE_BASE,
 	.utmi_mode = DWC3_OMAP_UTMI_MODE_SW,
-	.vbus_id_status = OMAP_DWC3_VBUS_VALID,
 	.index = 0,
 };
 
@@ -135,7 +420,6 @@ static struct dwc3_device usb_otg_ss2 = {
 static struct dwc3_omap_device usb_otg_ss2_glue = {
 	.base = (void *)DRA7_USB_OTG_SS2_GLUE_BASE,
 	.utmi_mode = DWC3_OMAP_UTMI_MODE_SW,
-	.vbus_id_status = OMAP_DWC3_VBUS_VALID,
 	.index = 1,
 };
 
@@ -146,6 +430,7 @@ static struct ti_usb_phy_device usb_phy2_device = {
 
 int board_usb_init(int index, enum usb_init_type init)
 {
+	enable_usb_clocks(index);
 	switch (index) {
 	case 0:
 		if (init == USB_INIT_DEVICE) {
@@ -192,6 +477,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	default:
 		printf("Invalid Controller Index\n");
 	}
+	disable_usb_clocks(index);
 	return 0;
 }
 

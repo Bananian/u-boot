@@ -19,7 +19,6 @@
 #define CONFIG_MPX5200		1	/* MPX5200 board */
 #define CONFIG_MPC5200_DDR	1	/* use DDR RAM */
 #define CONFIG_IPEK01           	/* Motherboard is ipek01 */
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define	CONFIG_SYS_TEXT_BASE	0xfc000000
@@ -171,9 +170,6 @@
 /*
  * Open firmware flat tree support
  */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 4)

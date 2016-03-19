@@ -18,11 +18,12 @@ AFLAGS_call32.o := -fpic -fshort-wchar
 
 extra-y += call32.o
 
+obj-y += intel_common/
 obj-$(CONFIG_INTEL_BAYTRAIL) += baytrail/
+obj-$(CONFIG_INTEL_BROADWELL) += broadwell/
 obj-$(CONFIG_SYS_COREBOOT) += coreboot/
 obj-$(CONFIG_EFI_APP) += efi/
 obj-$(CONFIG_QEMU) += qemu/
-obj-$(CONFIG_NORTHBRIDGE_INTEL_SANDYBRIDGE) += ivybridge/
 obj-$(CONFIG_NORTHBRIDGE_INTEL_IVYBRIDGE) += ivybridge/
 obj-$(CONFIG_INTEL_QUARK) += quark/
 obj-$(CONFIG_INTEL_QUEENSBAY) += queensbay/

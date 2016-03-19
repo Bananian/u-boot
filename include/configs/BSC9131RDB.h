@@ -11,7 +11,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #ifdef CONFIG_BSC9131RDB
@@ -228,7 +227,6 @@ extern unsigned long get_sdram_size(void);
 /* Serial Port */
 #define CONFIG_CONS_INDEX	1
 #undef	CONFIG_SERIAL_SOFTWARE_FIFO
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -249,17 +247,6 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
 #endif
 
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
-
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_FSL
 #define CONFIG_SYS_FSL_I2C_SPEED	400000
@@ -268,7 +255,6 @@ extern unsigned long get_sdram_size(void);
 
 /* I2C EEPROM */
 #define CONFIG_CMD_EEPROM
-#define CONFIG_SYS_I2C_MULTI_EEPROMS
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN 1
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS 3
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS 5
@@ -276,10 +262,8 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_CMD_I2C
 
 
-#define CONFIG_FSL_ESPI
 /* eSPI - Enhanced SPI */
 #ifdef CONFIG_FSL_ESPI
-#define CONFIG_SPI_FLASH_SPANSION
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED		10000000
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
@@ -342,7 +326,6 @@ extern unsigned long get_sdram_size(void);
  */
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_ERRATA
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_IRQ

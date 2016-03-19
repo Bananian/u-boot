@@ -17,15 +17,15 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define CONFIG_SYS_CACHELINE_SIZE	64
+
 /*
  * High Level Configuration Options
  */
 #define CONFIG_OMAP	/* in a TI OMAP core */
 #define CONFIG_OMAP_GPIO
-#define CONFIG_CMD_GPIO
 #define CONFIG_CM_T3X	/* working with CM-T35 and CM-T3730 */
 #define CONFIG_OMAP_COMMON
-#define CONFIG_SYS_GENERIC_BOARD
 /* Common ARM Erratas */
 #define CONFIG_ARM_ERRATA_454179
 #define CONFIG_ARM_ERRATA_430973
@@ -47,8 +47,6 @@
 #define V_SCLK			(V_OSCK >> 1)
 
 #define CONFIG_MISC_INIT_R
-
-#define CONFIG_OF_LIBFDT		1
 
 #define CONFIG_CMDLINE_TAG		/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS
@@ -72,7 +70,6 @@
  */
 #define V_NS16550_CLK			48000000	/* 48MHz (APLL96/2) */
 
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	(-4)
 #define CONFIG_SYS_NS16550_CLK		V_NS16550_CLK
@@ -147,7 +144,6 @@
 /*
  * Board NAND Info.
  */
-#define CONFIG_SYS_NAND_QUIET_TEST
 #define CONFIG_NAND_OMAP_GPMC
 #define CONFIG_SYS_NAND_ADDR		NAND_BASE	/* physical address */
 							/* to access nand */

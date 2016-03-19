@@ -15,7 +15,6 @@
 
 #define CONFIG_MPC5200		1	/* This is an MPC5200 CPU */
 #define CONFIG_JUPITER		1	/* ... on Jupiter board */
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 /*
@@ -135,9 +134,6 @@
 
 #if 0
 /* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 8)

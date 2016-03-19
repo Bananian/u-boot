@@ -25,6 +25,7 @@
 		 * to be added to the gmac1 device tree blob.
 		 */
 		ethernet0 = &gmac1;
+		udc0 = &usb1;
 	};
 
 	regulator_3_3v: 3-3-v-regulator {
@@ -32,6 +33,10 @@
 		regulator-name = "3.3V";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+	};
+
+	soc {
+		u-boot,dm-pre-reloc;
 	};
 };
 
@@ -67,6 +72,8 @@
 &mmc0 {
 	vmmc-supply = <&regulator_3_3v>;
 	vqmmc-supply = <&regulator_3_3v>;
+	bus-width = <4>;
+	u-boot,dm-pre-reloc;
 };
 
 &usb1 {
@@ -75,8 +82,10 @@
 
 &qspi {
 	status = "okay";
+	u-boot,dm-pre-reloc;
 
 	flash0: n25q00@0 {
+		u-boot,dm-pre-reloc;
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "n25q00";

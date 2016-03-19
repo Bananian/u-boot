@@ -22,7 +22,6 @@
 
 #define CONFIG_MPC885		1	/* This is a MPC885 CPU		*/
 #define CONFIG_TQM885D		1	/* ...on a TQM88D module	*/
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define	CONFIG_SYS_TEXT_BASE	0x40000000
@@ -473,9 +472,6 @@
 
 #define CONFIG_ETHPRIME		"SCC"
 
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
 #define CONFIG_HWCONFIG		1
 
 #endif	/* __CONFIG_H */

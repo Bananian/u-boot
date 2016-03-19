@@ -38,7 +38,6 @@
 #define CONFIG_SYS_RTC_DS1337_NOOSC
 #define CONFIG_CMD_DATE
 
-#define CONFIG_CMD_GPIO
 
 /* LED */
 #define CONFIG_CMD_LED
@@ -67,5 +66,13 @@
 #define CONFIG_BOOTCOUNT_LIMIT
 #define CONFIG_SYS_BOOTCOUNT_ADDR	IRAM_BASE_ADDR
 #define CONFIG_SYS_BOOTCOUNT_BE
+
+/*
+ * Remove all unused interfaces / commands that are defined in
+ * the common header tqms6.h
+ */
+#undef CONFIG_CMD_SF
+#undef CONFIG_CMD_SPI
+#undef CONFIG_MXC_SPI
 
 #endif /* __CONFIG_TQMA6_WRU4_H */

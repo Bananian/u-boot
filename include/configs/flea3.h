@@ -22,7 +22,6 @@
 #define CONFIG_SYS_CACHELINE_SIZE	32
 
 #define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_SYS_GENERIC_BOARD
 
 /* Only in case the value is not present in mach-types.h */
 #ifndef MACH_TYPE_FLEA3
@@ -52,6 +51,8 @@
  */
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_SYS_SPD_BUS_NUM		2 /* I2C3 */
 #define CONFIG_SYS_MXC_I2C3_SLAVE	0xfe
@@ -248,5 +249,8 @@
 		"fi;"							\
 		"else echo U-Boot not downloaded..exiting;fi\0"		\
 	"bootcmd=run net_nfs\0"
+
+/* Enable FIT images support */
+#define CONFIG_CMD_FDT
 
 #endif				/* __CONFIG_H */

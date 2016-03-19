@@ -20,7 +20,6 @@
 #define CONFIG_A4M072		1	/* ... on A4M072 board */
 #define CONFIG_MPC5200_DDR	1	/* ... use DDR RAM */
 #define CONFIG_DISPLAY_BOARDINFO
-#define CONFIG_SYS_GENERIC_BOARD
 
 #define CONFIG_SYS_TEXT_BASE	0xFE000000
 
@@ -355,9 +354,6 @@
  * Open firmware flat tree support
  *-----------------------------------------------------------------------
  */
-#define CONFIG_OF_LIBFDT	1
-#define CONFIG_OF_BOARD_SETUP	1
-
 #define OF_CPU			"PowerPC,5200@0"
 #define OF_SOC			"soc5200@f0000000"
 #define OF_TBCLK		(bd->bi_busfreq / 4)

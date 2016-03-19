@@ -10,6 +10,8 @@
 #ifndef __CONFIG_TI816X_EVM_H
 #define __CONFIG_TI816X_EVM_H
 
+#define CONFIG_SYS_CACHELINE_SIZE	64
+
 #define CONFIG_TI81XX
 #define CONFIG_TI816X
 #define CONFIG_SYS_NO_FLASH
@@ -26,7 +28,6 @@
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_MACH_TYPE		MACH_TYPE_TI8168EVM
 
-#define CONFIG_OF_LIBFDT
 #define CONFIG_CMDLINE_TAG		/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG		/* required for ramdisk support */
@@ -108,7 +109,6 @@
 /*
  * NS16550 Configuration
  */
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE (-4)
 #define CONFIG_SYS_NS16550_CLK      (48000000)

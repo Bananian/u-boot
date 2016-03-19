@@ -21,7 +21,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 struct mmc_host mmc_host[CONFIG_SYS_MMC_MAX_DEVICE];
 
-#ifndef CONFIG_OF_CONTROL
+#if !CONFIG_IS_ENABLED(OF_CONTROL)
 #error "Please enable device tree support to use this driver"
 #endif
 
@@ -674,7 +674,7 @@ void tegra_mmc_init(void)
 		CONFIG_SYS_MMC_MAX_DEVICE);
 	debug("%s: count of Tegra210 sdhci nodes is %d\n", __func__, count);
 	if (process_nodes(blob, node_list, count)) {
-		printf("%s: Error processing T30 mmc node(s)!\n", __func__);
+		printf("%s: Error processing T210 mmc node(s)!\n", __func__);
 		return;
 	}
 
@@ -684,7 +684,7 @@ void tegra_mmc_init(void)
 		CONFIG_SYS_MMC_MAX_DEVICE);
 	debug("%s: count of Tegra124 sdhci nodes is %d\n", __func__, count);
 	if (process_nodes(blob, node_list, count)) {
-		printf("%s: Error processing T30 mmc node(s)!\n", __func__);
+		printf("%s: Error processing T124 mmc node(s)!\n", __func__);
 		return;
 	}
 

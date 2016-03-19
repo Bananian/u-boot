@@ -29,14 +29,34 @@ static const unsigned long baudrate_table[] = CONFIG_SYS_BAUDRATE_TABLE;
 
 static void serial_find_console_or_panic(void)
 {
+	const void *blob = gd->fdt_blob;
 	struct udevice *dev;
 	int node;
 
-	if (OF_CONTROL && gd->fdt_blob) {
+	if (CONFIG_IS_ENABLED(OF_CONTROL) && blob) {
 		/* Check for a chosen console */
-		node = fdtdec_get_chosen_node(gd->fdt_blob, "stdout-path");
+		node = fdtdec_get_chosen_node(blob, "stdout-path");
+		if (node < 0) {
+			const char *str, *p, *name;
+
+			/*
+			 * Deal with things like
+			 *	stdout-path = "serial0:115200n8";
+			 *
+			 * We need to look up the alias and then follow it to
+			 * the correct node.
+			 */
+			str = fdtdec_get_chosen_prop(blob, "stdout-path");
+			if (str) {
+				p = strchr(str, ':');
+				name = fdt_get_alias_namelen(blob, str,
+						p ? p - str : strlen(str));
+				if (name)
+					node = fdt_path_offset(blob, name);
+			}
+		}
 		if (node < 0)
-			node = fdt_path_offset(gd->fdt_blob, "console");
+			node = fdt_path_offset(blob, "console");
 		if (!uclass_get_device_by_of_offset(UCLASS_SERIAL, node,
 						    &dev)) {
 			gd->cur_serial_dev = dev;
@@ -44,26 +64,26 @@ static void serial_find_console_or_panic(void)
 		}
 
 		/*
-		* If the console is not marked to be bound before relocation,
-		* bind it anyway.
-		*/
+		 * If the console is not marked to be bound before relocation,
+		 * bind it anyway.
+		 */
 		if (node > 0 &&
-		    !lists_bind_fdt(gd->dm_root, gd->fdt_blob, node, &dev)) {
+		    !lists_bind_fdt(gd->dm_root, blob, node, &dev)) {
 			if (!device_probe(dev)) {
 				gd->cur_serial_dev = dev;
 				return;
 			}
 		}
 	}
-	if (!SPL_BUILD || !OF_CONTROL || !gd->fdt_blob) {
+	if (!SPL_BUILD || !CONFIG_IS_ENABLED(OF_CONTROL) || !blob) {
 		/*
-		* Try to use CONFIG_CONS_INDEX if available (it is numbered
-		* from 1!).
-		*
-		* Failing that, get the device with sequence number 0, or in
-		* extremis just the first serial device we can find. But we
-		* insist on having a console (even if it is silent).
-		*/
+		 * Try to use CONFIG_CONS_INDEX if available (it is numbered
+		 * from 1!).
+		 *
+		 * Failing that, get the device with sequence number 0, or in
+		 * extremis just the first serial device we can find. But we
+		 * insist on having a console (even if it is silent).
+		 */
 #ifdef CONFIG_CONS_INDEX
 #define INDEX (CONFIG_CONS_INDEX - 1)
 #else
@@ -95,7 +115,7 @@ int serial_init(void)
 /* Called after relocation */
 void serial_initialize(void)
 {
-	serial_find_console_or_panic();
+	serial_init();
 }
 
 static void _serial_putc(struct udevice *dev, char ch)
@@ -103,11 +123,12 @@ static void _serial_putc(struct udevice *dev, char ch)
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 	int err;
 
+	if (ch == '\n')
+		_serial_putc(dev, '\r');
+
 	do {
 		err = ops->putc(dev, ch);
 	} while (err == -EAGAIN);
-	if (ch == '\n')
-		_serial_putc(dev, '\r');
 }
 
 static void _serial_puts(struct udevice *dev, const char *str)
@@ -184,7 +205,7 @@ void serial_stdio_init(void)
 {
 }
 
-#ifdef CONFIG_DM_STDIO
+#if defined(CONFIG_DM_STDIO) && CONFIG_IS_ENABLED(SERIAL_PRESENT)
 static void serial_stub_putc(struct stdio_dev *sdev, const char ch)
 {
 	_serial_putc(sdev->priv, ch);
@@ -267,6 +288,7 @@ static int on_baudrate(const char *name, const char *value, enum env_op op,
 }
 U_BOOT_ENV_CALLBACK(baudrate, on_baudrate);
 
+#if CONFIG_IS_ENABLED(SERIAL_PRESENT)
 static int serial_post_probe(struct udevice *dev)
 {
 	struct dm_serial_ops *ops = serial_get_ops(dev);
@@ -336,3 +358,4 @@ UCLASS_DRIVER(serial) = {
 	.pre_remove	= serial_pre_remove,
 	.per_device_auto_alloc_size = sizeof(struct serial_dev_priv),
 };
+#endif

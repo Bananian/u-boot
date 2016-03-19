@@ -108,7 +108,6 @@
 #define CONFIG_USB_STORAGE	/* USB storage support		*/
 #define CONFIG_CMD_NAND		/* NAND support			*/
 #define CONFIG_CMD_LED		/* LED support			*/
-#define CONFIG_CMD_GPIO     /* Enable gpio command */
 #define CONFIG_CMD_DHCP
 
 #define CONFIG_VIDEO_OMAP3	/* DSS Support			*/
@@ -121,7 +120,6 @@
 /*
  * Board NAND Info.
  */
-#define CONFIG_SYS_NAND_QUIET_TEST	1
 #define CONFIG_NAND_OMAP_GPMC
 #define CONFIG_SYS_MAX_NAND_DEVICE	1		/* Max number of NAND */
 							/* devices */

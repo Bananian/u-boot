@@ -14,7 +14,6 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_BOARDINFO
 
 #define CONFIG_FSL_ELBC
@@ -330,7 +329,6 @@
  */
 #define CONFIG_CONS_INDEX		1
 #undef CONFIG_SERIAL_SOFTWARE_FIFO
-#define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
@@ -346,17 +344,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-
-/*
- * Pass open firmware flat tree
- */
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_OF_STDOUT_VIA_ALIAS
-
-/* new uImage format support */
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE	/* enable fit_format_{error,warning}() */
 
 /* I2C */
 #define CONFIG_SYS_I2C
@@ -381,11 +368,7 @@
  * eSPI - Enhanced SPI
  */
 #define CONFIG_HARD_SPI
-#define CONFIG_FSL_ESPI
 
-#define CONFIG_SPI_FLASH_SST		1
-#define CONFIG_SPI_FLASH_STMICRO	1
-#define CONFIG_SPI_FLASH_WINBOND	1
 #define CONFIG_CMD_SF			1
 #define CONFIG_CMD_SPI			1
 #define CONFIG_SF_DEFAULT_SPEED		10000000
@@ -420,7 +403,6 @@
 #define CONFIG_SYS_PCIE1_IO_SIZE	0x00010000	/* 64k */
 
 #define CONFIG_PCI_PNP	/* do pci plug-and-play */
-#define CONFIG_E1000	/* Defind e1000 pci Ethernet card*/
 #define CONFIG_CMD_PCI
 
 #define CONFIG_PCI_SCAN_SHOW	/* show pci devices on startup */
@@ -495,7 +477,6 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_DATE
-#define CONFIG_CMD_ELF
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_IRQ
 #define CONFIG_CMD_MII
@@ -503,7 +484,6 @@
 #define CONFIG_CMD_REGINFO
 #define CONFIG_CMD_ERRATA
 #define CONFIG_CMD_CRAMFS
-#define CONFIG_CRAMFS_CMDLINE
 
 /*
  * USB
@@ -541,7 +521,6 @@
 #endif
 
 /* Misc Extra Settings */
-#define CONFIG_CMD_GPIO			1
 #undef CONFIG_WATCHDOG	/* watchdog disabled */
 
 /*

@@ -200,9 +200,20 @@ int uclass_get_device_by_phandle(enum uclass_id id, struct udevice *parent,
  *
  * @id: Uclass ID to look up
  * @devp: Returns pointer to the first device in that uclass, or NULL if none
- * @return 0 if OK (found or not found), -1 on error
+ * @return 0 if OK (found or not found), other -ve on error
  */
 int uclass_first_device(enum uclass_id id, struct udevice **devp);
+
+/**
+ * uclass_first_device_err() - Get the first device in a uclass
+ *
+ * The device returned is probed if necessary, and ready for use
+ *
+ * @id: Uclass ID to look up
+ * @devp: Returns pointer to the first device in that uclass, or NULL if none
+ * @return 0 if found, -ENODEV if not found, other -ve on error
+ */
+int uclass_first_device_err(enum uclass_id id, struct udevice **devp);
 
 /**
  * uclass_next_device() - Get the next device in a uclass
@@ -211,7 +222,7 @@ int uclass_first_device(enum uclass_id id, struct udevice **devp);
  *
  * @devp: On entry, pointer to device to lookup. On exit, returns pointer
  * to the next device in the same uclass, or NULL if none
- * @return 0 if OK (found or not found), -1 on error
+ * @return 0 if OK (found or not found), other -ve on error
  */
 int uclass_next_device(struct udevice **devp);
 
@@ -240,12 +251,22 @@ int uclass_resolve_seq(struct udevice *dev);
  * are no more devices.
  * @uc: uclass to scan
  */
-#define uclass_foreach_dev(pos, uc)					\
-	for (pos = list_entry((&(uc)->dev_head)->next, typeof(*pos),	\
-			uclass_node);					\
-	     prefetch(pos->uclass_node.next),				\
-			&pos->uclass_node != (&(uc)->dev_head);		\
-	     pos = list_entry(pos->uclass_node.next, typeof(*pos),	\
-			uclass_node))
+#define uclass_foreach_dev(pos, uc)	\
+	list_for_each_entry(pos, &uc->dev_head, uclass_node)
+
+/**
+ * uclass_foreach_dev_safe() - Helper function to safely iteration through devs
+ *
+ * This creates a for() loop which works through the available devices in
+ * a uclass in order from start to end. Inside the loop, it is safe to remove
+ * @pos if required.
+ *
+ * @pos: struct udevice * to hold the current device. Set to NULL when there
+ * are no more devices.
+ * @next: struct udevice * to hold the next next
+ * @uc: uclass to scan
+ */
+#define uclass_foreach_dev_safe(pos, next, uc)	\
+	list_for_each_entry_safe(pos, next, &uc->dev_head, uclass_node)
 
 #endif

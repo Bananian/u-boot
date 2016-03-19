@@ -20,7 +20,6 @@
  */
 #define CONFIG_MX27			/* This is a Freescale i.MX27 Chip */
 #define CONFIG_MACH_TYPE	1698	/* APF27 */
-#define CONFIG_SYS_GENERIC_BOARD
 
 /*
  * Enable the call to miscellaneous platform dependent initialization.
@@ -161,8 +160,6 @@
 #define CONFIG_CMDLINE_TAG		/* send commandline to Kernel	*/
 #define CONFIG_SETUP_MEMORY_TAGS	/* send memory definition to kernel */
 #define CONFIG_INITRD_TAG		/* send initrd params	*/
-
-#define CONFIG_OF_LIBFDT
 
 #define CONFIG_BOOTDELAY	5
 #define CONFIG_ZERO_BOOTDELAY_CHECK
@@ -317,6 +314,8 @@
 #ifdef CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_MXC_I2C1_SPEED	100000	/* 100 kHz */
 #define CONFIG_SYS_MXC_I2C1_SLAVE	0x7F
 #define CONFIG_SYS_MXC_I2C2_SPEED	100000	/* 100 kHz */

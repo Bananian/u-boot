@@ -48,7 +48,6 @@
 #define CONFIG_MXC_SPI
 
 /* SPI Flash */
-#define CONFIG_SPI_FLASH_STMICRO
 
 #define TQMA6_SPI_FLASH_SECTOR_SIZE	SZ_64K
 
@@ -62,6 +61,8 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
 #define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 #define CONFIG_I2C_MULTI_BUS
 #define CONFIG_SYS_I2C_SPEED		100000
@@ -376,11 +377,6 @@
 	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
-
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-#define CONFIG_FIT
-#define CONFIG_FIT_VERBOSE
 
 /*
  * All the defines above are for the TQMa6 SoM
